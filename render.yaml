@@ -6,6 +6,8 @@ services:
     buildCommand: pip install -r requirements.txt && python manage.py migrate && python manage.py collectstatic --noinput
     startCommand: gunicorn music.wsgi:application
     envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
       - key: DJANGO_DEBUG
         value: "false"
       - key: DJANGO_ALLOWED_HOSTS
