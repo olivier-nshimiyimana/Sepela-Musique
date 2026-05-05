@@ -61,6 +61,9 @@ SECRET_KEY = os.environ.get(
 DEBUG = _env_bool('DJANGO_DEBUG', default=True)
 
 ALLOWED_HOSTS = _env_list('DJANGO_ALLOWED_HOSTS', default='127.0.0.1,localhost')
+_render_host = os.environ.get('RENDER_EXTERNAL_HOSTNAME', '').strip()
+if _render_host and _render_host not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(_render_host)
 
 # Baseline security hardening.
 SECURE_CONTENT_TYPE_NOSNIFF = True
@@ -78,6 +81,8 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = _env_bool('SECURE_HSTS_INCLUDE_SUBDOMAINS', def
 SECURE_HSTS_PRELOAD = _env_bool('SECURE_HSTS_PRELOAD', default=not DEBUG)
 
 _csrf_origins = _env_list('CSRF_TRUSTED_ORIGINS')
+if not _csrf_origins and _render_host:
+    _csrf_origins = ['https://%s' % _render_host]
 if _csrf_origins:
     CSRF_TRUSTED_ORIGINS = _csrf_origins
 
