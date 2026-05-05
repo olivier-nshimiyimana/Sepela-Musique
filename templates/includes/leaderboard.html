@@ -1,0 +1,45 @@
+{% load static ui_i18n %}
+<aside class="tw-w-full tw-max-w-full tw-min-w-0 tw-rounded-3xl tw-border tw-border-white/[0.08] tw-bg-gradient-to-br tw-from-violet-950/90 tw-via-[#12081f]/85 tw-to-black/70 tw-backdrop-blur-xl tw-p-4 sm:tw-p-6 tw-shadow-[0_25px_80px_-20px_rgba(124,58,237,0.35)] lg:tw-sticky lg:tw-top-24" aria-labelledby="leaderboard-heading">
+    <div class="tw-flex tw-items-start tw-justify-between tw-gap-3 tw-mb-4">
+        <div class="tw-min-w-0 tw-pr-2">
+            <h2 id="leaderboard-heading" class="tw-font-display tw-text-lg sm:tw-text-xl md:tw-text-2xl tw-font-bold tw-text-white tw-tracking-tight">
+                {% ui 'top_artists' %}
+            </h2>
+        </div>
+        <span class="tw-shrink-0 tw-inline-flex tw-h-9 tw-w-9 sm:tw-h-10 sm:tw-w-10 tw-items-center tw-justify-center tw-rounded-xl tw-bg-white/5 tw-border tw-border-white/10 tw-text-base" aria-hidden="true">🏆</span>
+    </div>
+
+    {% if leaderboard %}
+    <ol class="tw-space-y-2 tw-font-sans tw-list-none tw-m-0 tw-p-0 tw-w-full tw-min-w-0">
+        {% for row in leaderboard %}
+        <li class="tw-flex tw-w-full tw-max-w-full tw-min-w-0 tw-flex-nowrap tw-items-center tw-gap-3 tw-rounded-2xl tw-border tw-border-white/[0.06] tw-bg-white/[0.03] tw-px-3 tw-py-2 sm:tw-px-4 sm:tw-py-2.5 tw-transition-all hover:tw-bg-white/[0.06] hover:tw-border-violet-400/20">
+
+            {% if row.rank == 1 %}
+            <span class="tw-flex tw-h-10 tw-w-10 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-xl tw-bg-gradient-to-br tw-from-amber-400 tw-to-amber-600 tw-text-sm tw-font-bold tw-text-black tw-shadow-lg tw-shadow-amber-500/30 tw-tabular-nums">{{ row.rank }}</span>
+            {% elif row.rank == 2 %}
+            <span class="tw-flex tw-h-10 tw-w-10 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-xl tw-bg-gradient-to-br tw-from-slate-300 tw-to-slate-500 tw-text-sm tw-font-bold tw-text-slate-900 tw-shadow-lg tw-tabular-nums">{{ row.rank }}</span>
+            {% elif row.rank == 3 %}
+            <span class="tw-flex tw-h-10 tw-w-10 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-xl tw-bg-gradient-to-br tw-from-amber-700 tw-to-orange-900 tw-text-sm tw-font-bold tw-text-amber-100 tw-shadow-lg tw-tabular-nums">{{ row.rank }}</span>
+            {% else %}
+            <span class="tw-flex tw-h-10 tw-w-10 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-xl tw-bg-white/5 tw-text-sm tw-font-semibold tw-text-violet-300/90 tw-tabular-nums">{{ row.rank }}</span>
+            {% endif %}
+
+            <div class="tw-min-w-0 tw-flex-1 tw-overflow-hidden">
+                <p class="tw-truncate tw-text-sm tw-font-semibold tw-leading-snug tw-text-white sm:tw-text-[15px]"
+                   title="{% with fn=row.artist.first_name ln=row.artist.last_name %}{% if fn or ln %}{{ fn }} {{ ln }}{% elif row.artist.get_full_name %}{{ row.artist.get_full_name }}{% else %}{{ row.artist.email }}{% endif %}{% endwith %}">
+                    {% with fn=row.artist.first_name ln=row.artist.last_name %}
+                    {% if fn or ln %}{{ fn }} {{ ln }}{% elif row.artist.get_full_name %}{{ row.artist.get_full_name }}{% else %}{{ row.artist.email }}{% endif %}
+                    {% endwith %}
+                </p>
+            </div>
+
+            <span class="tw-shrink-0 tw-tabular-nums tw-rounded-full tw-bg-fuchsia-500/15 tw-px-2.5 tw-py-1 tw-text-[11px] tw-font-semibold tw-text-fuchsia-200 tw-ring-1 tw-ring-fuchsia-400/25 tw-whitespace-nowrap">{{ row.vote_count }} {% ui 'votes_suffix' %}</span>
+        </li>
+        {% endfor %}
+    </ol>
+    {% else %}
+    <div class="tw-rounded-2xl tw-border tw-border-dashed tw-border-white/15 tw-bg-black/20 tw-py-10 tw-px-4 tw-text-center">
+        <p class="tw-font-sans tw-text-sm tw-text-white/50 tw-leading-relaxed">{% ui 'no_rankings_yet' %}</p>
+    </div>
+    {% endif %}
+</aside>

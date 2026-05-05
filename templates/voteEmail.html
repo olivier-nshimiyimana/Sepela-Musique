@@ -1,0 +1,65 @@
+{% extends 'layouts/base.html' %}
+{% load static ui_i18n %}
+
+{% block stylesheets %}
+{% include 'includes/tw_theme_setup.html' %}
+{% endblock %}
+
+{% block content %}
+
+<main id="pageWrapper" class="vote-page-premium tw-min-h-screen tw-bg-[#07060b]">
+
+    <div class="banner bg-song"></div>
+
+    <div class="premium-page tw-relative tw-min-h-[calc(100vh-6rem)] tw-py-10 tw-pb-16">
+        <div class="premium-mesh" aria-hidden="true"></div>
+
+        <div class="premium-content tw-max-w-lg tw-mx-auto tw-px-4 sm:tw-px-6">
+
+            <header class="tw-text-center tw-mb-8 tw-opacity-0 tw-animate-fade-up" style="animation-fill-mode: forwards;">
+                <p class="tw-font-sans tw-text-xs tw-font-semibold tw-tracking-[0.2em] tw-text-fuchsia-400/90 tw-uppercase tw-mb-2">{% ui 'confirm_vote' %}</p>
+                <h1 class="tw-font-display tw-text-2xl sm:tw-text-3xl tw-font-bold tw-text-white tw-tracking-tight">{% ui 'cast_vote' %}</h1>
+                <p class="tw-mt-3 tw-text-sm tw-text-white/50 tw-font-sans tw-leading-relaxed">
+                    {% ui 'vote_desc' %}
+                </p>
+            </header>
+
+            {% if error_message %}
+            <div class="tw-mb-6 tw-rounded-2xl tw-border tw-border-rose-400/30 tw-bg-rose-500/10 tw-px-4 tw-py-3 tw-text-center tw-font-sans tw-text-sm tw-text-rose-100" role="alert">
+                {{ error_message }}
+            </div>
+            {% endif %}
+
+            <div class="tw-rounded-3xl tw-border tw-border-white/[0.08] tw-bg-white/[0.04] tw-backdrop-blur-xl tw-p-6 sm:tw-p-8 tw-shadow-[0_25px_80px_-20px_rgba(124,58,237,0.35)] tw-opacity-0 tw-animate-fade-up-delay" style="animation-fill-mode: forwards;">
+                <form action="{% url 'core:vote' %}" method="post" enctype="multipart/form-data" class="tw-space-y-5 tw-font-sans">
+                    {% csrf_token %}
+                    <input type="hidden" name="song_id" value="{{ id }}">
+
+                    <div>
+                        <label for="vote-email" class="tw-block tw-text-xs tw-font-semibold tw-tracking-wide tw-text-white/55 tw-mb-2 tw-uppercase">{% ui 'contact' %}</label>
+                        <input id="vote-email" type="email" name="email" required autocomplete="email"
+                            class="tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/30 tw-px-4 tw-py-3 tw-text-sm tw-text-white tw-placeholder-white/30 tw-outline-none tw-ring-0 tw-transition focus:tw-border-violet-400/50 focus:tw-ring-2 focus:tw-ring-violet-500/30"
+                            placeholder="you@example.com">
+                    </div>
+
+                    <div class="tw-flex tw-flex-col sm:tw-flex-row tw-gap-3 tw-pt-2">
+                        <button type="submit" class="tw-inline-flex tw-flex-1 tw-items-center tw-justify-center tw-rounded-xl tw-bg-gradient-to-r tw-from-violet-600 tw-to-fuchsia-600 tw-px-5 tw-py-3.5 tw-text-sm tw-font-semibold tw-text-white tw-shadow-lg tw-shadow-violet-600/25 tw-transition hover:tw-brightness-110 focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-fuchsia-400/50">
+                            {% ui 'send_confirmation' %}
+                        </button>
+                        <a href="{% url 'core:home' %}" class="tw-inline-flex tw-items-center tw-justify-center tw-rounded-xl tw-border tw-border-white/15 tw-bg-white/[0.04] tw-px-5 tw-py-3.5 tw-text-sm tw-font-semibold tw-text-white/85 tw-transition hover:tw-bg-white/[0.08]">
+                            {% ui 'cancel' %}
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <p class="tw-mt-8 tw-text-center tw-text-xs tw-text-white/35 tw-font-sans">
+                {% ui 'trouble_mail' %}
+            </p>
+        </div>
+    </div>
+
+    {% include 'includes/footer.html' %}
+</main>
+
+{% endblock %}

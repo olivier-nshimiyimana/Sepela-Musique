@@ -1,0 +1,42 @@
+{% load static %}
+<aside id="sidebar" class="sidebar-primary">
+    <div class="sidebar-header d-flex align-items-center">
+        <a href="/" class="brand">
+            <img src="{% static 'images/logos/logo.png' %}" alt="listen-app">
+        </a>
+        <button type="button" class="btn p-0 ml-auto" id="hideSidebar">
+            <i class="ion-md-arrow-back h3"></i>
+        </button>
+        <button type="button" class="btn toggle-menu" id="toggleSidebar">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </div>
+    <nav class="navbar">
+        <ul class="navbar-nav" data-scrollable="true">
+            <li class="nav-item nav-header">Sepela Musique</li>
+            <li class="nav-item">
+                <a href="/" class="nav-link">
+                    <i class="la la-home"></i>
+                    <span>Home</span>
+                </a>
+            </li>
+            <
+            <li class="nav-item">
+                <a href="#" class="nav-link">
+                    <i class="la la-music"></i>
+                    <span>Free Music</span>
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <a href="#" class="nav-link">
+                    <i class="la la-bullseye"></i>
+                    <span>Stations</span>
+                </a>
+            </li>
+            
+        </ul>
+    </nav>
+</aside>

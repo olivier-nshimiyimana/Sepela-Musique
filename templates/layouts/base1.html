@@ -1,0 +1,133 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title></title>
+        <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+     {% csrf_token %}
+    <title>Sepela Musique Label</title>
+    <link rel="icon" type="image/png" href="{% static 'images/logos/favicon.png' %}">
+    <link rel="alternate icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/line-awesome@1.0.2/css/line-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ionicons/4.5.6/css/ionicons.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.9.0/slick.min.css">
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet"/>
+    <link href="css/select2-bootstrap4.min.css" rel="stylesheet"/>
+
+    
+    <link href="{% static 'css/vendors.bundle.css' %}" rel="stylesheet" type="text/css">
+<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Roboto+Slab:100,300,400,700" rel="stylesheet">
+<!--[if lt IE 9]>
+<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+<![endif]-->
+<link rel="stylesheet" type="text/css"
+      href="http://ajax.googleapis.com/ajax/libs/jqueryui/1/themes/flick/jquery-ui.css">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/tag-it/2.0/css/jquery.tagit.min.css" rel="stylesheet"
+      type="text/css">
+<link href="{% static 'css/styles.bundle.css' %}" rel="stylesheet" type="text/css">
+<link rel="stylesheet" type="text/css" href="{% static 'css/toastr.min.css' %}">
+</head>
+
+<body > 
+<!-- {% include 'includes/sidebar.html' %} -->
+  <main id="pageWrapper" >
+      <!--   <div class="banner bg-song"></div> -->
+        <br><br><br><br><br>
+
+       
+<header id="header" class="bg-primary">
+    <div class="d-flex align-items-center">
+        <button type="button" class="btn toggle-menu mr-3" id="openSidebar">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <form action="#" id="searchForm">
+            <button type="button" class="btn ion-ios-search"></button>
+            <input type="text" placeholder="Search..." class="form-control" id="search" data-search-url="#">
+            <div class="search-card" data-scrollable="true">
+                <div class="mb-3">
+                    <div class="d-flex">
+                        <span class="text-uppercase mr-auto font-weight-bold text-dark">Track</span>
+                        <a href="#">View All</a>
+                    </div>
+                    <hr>
+                    <div class="row" id="search-track">
+
+                    </div>
+                </div>
+            </div>
+        </form>
+        <ul class="header-options d-flex align-items-center">
+          
+             
+                <li>
+                    <a href="{% url 'core:home' %}" data-toggle="modal" data-target="#home">
+                        <span>Home</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="accounts/login" data-toggle="modal" data-target="#log">
+                        <span>Login</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="accounts/register" data-toggle="modal" data-target="#register">
+                        <span>Register</span>
+                    </a>
+                </li>
+          
+        </ul>
+    </div>
+    
+</header>
+     {% block content %} 
+
+     {% endblock %}   
+
+
+<!--  <!-- Footer -->
+            <footer class="content-footer footer bg-footer-theme">
+              <div class="container-xxl d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
+                <div class="mb-2 mb-md-0">
+                  ©
+                  <script>
+                    document.write(new Date().getFullYear());
+                  </script>
+                  , made  by
+                  <a href="https://themeselection.com" target="_blank" class="footer-link fw-bolder">CST|KinaMusic</a>
+                </div>
+                <div>
+                  <a href="https://themeselection.com/license/" class="footer-link me-4" target="_blank">License</a>
+                  <a href="https://themeselection.com/" target="_blank" class="footer-link me-4">More videos</a>
+
+                  <a
+                    href="https://themeselection.com/demo/sneat-bootstrap-html-admin-template/documentation/"
+                    target="_blank"
+                    class="footer-link me-4"
+                    >Explore</a
+                  >
+
+                  <a
+                    href="https://github.com/themeselection/sneat-html-admin-template-free/issues"
+                    target="_blank"
+                    class="footer-link me-4"
+                    >Contact|Us</a
+                  >
+                </div>
+              </div>
+            </footer>
+            <!-- / Footer -- -->
+            {% include 'includes/footer.html' %}
+
+</body>
+</html>

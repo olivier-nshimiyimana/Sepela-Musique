@@ -1,0 +1,81 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block stylesheets %}
+{% include 'includes/tw_theme_setup.html' %}
+{% endblock %}
+
+{% block content %}
+
+<main id="pageWrapper" class="about-page-premium tw-min-h-screen tw-bg-[#07060b]">
+
+    <div class="banner bg-home"></div>
+
+    <div class="premium-page tw-relative tw-min-h-screen tw-py-10 tw-pb-20">
+        <div class="premium-mesh" aria-hidden="true"></div>
+
+        <div class="premium-content tw-max-w-5xl tw-mx-auto tw-px-4 sm:tw-px-6 lg:tw-px-8 tw-pt-16 md:tw-pt-20">
+
+            <header class="tw-text-center tw-mb-12 tw-opacity-0 tw-animate-fade-up" style="animation-fill-mode: forwards;">
+                <p class="tw-font-sans tw-text-xs tw-font-semibold tw-tracking-[0.2em] tw-text-fuchsia-400/90 tw-uppercase tw-mb-3">{{ site_settings.site_title|default:"Sepela Musique" }}</p>
+                <h1 class="tw-font-display tw-text-3xl sm:tw-text-4xl tw-font-bold tw-text-white tw-tracking-tight">Contact administration</h1>
+                <p class="tw-mt-4 tw-max-w-2xl tw-mx-auto tw-text-base tw-text-white/50 tw-font-sans tw-leading-relaxed">
+                    Reach the team — studio, partnerships, or listener support.
+                </p>
+            </header>
+
+            <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-3 tw-gap-4 tw-mb-12 tw-opacity-0 tw-animate-fade-up-delay" style="animation-fill-mode: forwards;">
+                <div class="tw-rounded-2xl tw-border tw-border-white/[0.07] tw-bg-white/[0.04] tw-backdrop-blur-md tw-p-6 tw-text-center">
+                    <span class="tw-mx-auto tw-mb-3 tw-flex tw-h-12 tw-w-12 tw-items-center tw-justify-center tw-rounded-xl tw-bg-violet-500/20 tw-text-xl" aria-hidden="true">📍</span>
+                    <h2 class="tw-font-sans tw-text-xs tw-font-semibold tw-tracking-wider tw-text-white/45 tw-uppercase tw-mb-2">Address</h2>
+                    <p class="tw-font-sans tw-text-sm tw-text-white/85 tw-leading-relaxed tw-break-words">{% if site_settings.contact_address %}{{ site_settings.contact_address|linebreaksbr }}{% else %}—{% endif %}</p>
+                </div>
+                <div class="tw-rounded-2xl tw-border tw-border-white/[0.07] tw-bg-white/[0.04] tw-backdrop-blur-md tw-p-6 tw-text-center">
+                    <span class="tw-mx-auto tw-mb-3 tw-flex tw-h-12 tw-w-12 tw-items-center tw-justify-center tw-rounded-xl tw-bg-fuchsia-500/20 tw-text-xl" aria-hidden="true">📞</span>
+                    <h2 class="tw-font-sans tw-text-xs tw-font-semibold tw-tracking-wider tw-text-white/45 tw-uppercase tw-mb-2">Phone</h2>
+                    <p class="tw-font-sans tw-text-sm tw-text-white/85">
+                        {% if site_settings.contact_phone %}
+                        <a href="tel:{{ site_settings.contact_phone }}" class="tw-text-cyan-300 hover:tw-underline">{{ site_settings.contact_phone }}</a>
+                        {% else %}—{% endif %}
+                    </p>
+                </div>
+                <div class="tw-rounded-2xl tw-border tw-border-white/[0.07] tw-bg-white/[0.04] tw-backdrop-blur-md tw-p-6 tw-text-center">
+                    <span class="tw-mx-auto tw-mb-3 tw-flex tw-h-12 tw-w-12 tw-items-center tw-justify-center tw-rounded-xl tw-bg-cyan-500/15 tw-text-xl" aria-hidden="true">✉️</span>
+                    <h2 class="tw-font-sans tw-text-xs tw-font-semibold tw-tracking-wider tw-text-white/45 tw-uppercase tw-mb-2">Email</h2>
+                    <p class="tw-font-sans tw-text-sm">
+                        <a href="mailto:{{ site_settings.contact_email }}" class="tw-text-violet-300 tw-break-all hover:tw-underline">{{ site_settings.contact_email }}</a>
+                    </p>
+                </div>
+            </div>
+
+            <div class="tw-rounded-3xl tw-border tw-border-white/[0.08] tw-bg-white/[0.03] tw-backdrop-blur-xl tw-p-6 sm:tw-p-10 tw-max-w-3xl tw-mx-auto tw-shadow-[0_25px_80px_-25px_rgba(0,0,0,0.6)]">
+                <h2 class="tw-font-display tw-text-xl tw-font-bold tw-text-white tw-text-center tw-mb-8">Send a message</h2>
+
+                <form method="POST" id="contactForm" action="{% url 'core:about' %}" class="tw-space-y-5 tw-font-sans">
+                    {% csrf_token %}
+                    {% for field in form %}
+                    <div>
+                        {% if not field.is_hidden %}
+                        <label for="{{ field.id_for_label }}" class="tw-block tw-text-xs tw-font-semibold tw-tracking-wide tw-text-white/50 tw-mb-2 tw-uppercase">{{ field.label }}</label>
+                        {% endif %}
+                        {{ field.errors }}
+                        <div class="[&_input]:tw-w-full [&_input]:tw-rounded-xl [&_input]:tw-border [&_input]:tw-border-white/15 [&_input]:tw-bg-black/30 [&_input]:tw-px-4 [&_input]:tw-py-3 [&_input]:tw-text-sm [&_input]:tw-text-white [&_input]:tw-placeholder-white/30 [&_input]:tw-outline-none [&_input]:focus:tw-border-violet-400/50 [&_input]:focus:tw-ring-2 [&_input]:focus:tw-ring-violet-500/30 [&_textarea]:tw-min-h-[140px] [&_textarea]:tw-w-full [&_textarea]:tw-rounded-xl [&_textarea]:tw-border [&_textarea]:tw-border-white/15 [&_textarea]:tw-bg-black/30 [&_textarea]:tw-px-4 [&_textarea]:tw-py-3 [&_textarea]:tw-text-sm [&_textarea]:tw-text-white [&_textarea]:tw-placeholder-white/30 [&_textarea]:tw-outline-none [&_textarea]:focus:tw-border-violet-400/50 [&_textarea]:focus:tw-ring-2 [&_textarea]:focus:tw-ring-violet-500/30">
+                            {{ field }}
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <div class="tw-pt-2">
+                        <button type="submit" class="tw-w-full sm:tw-w-auto tw-inline-flex tw-items-center tw-justify-center tw-rounded-xl tw-bg-gradient-to-r tw-from-violet-600 tw-to-fuchsia-600 tw-px-8 tw-py-3.5 tw-text-sm tw-font-semibold tw-text-white tw-shadow-lg tw-transition hover:tw-brightness-110 focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-fuchsia-400/50">
+                            Send message
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {% include 'includes/footer.html' %}
+</main>
+
+{% endblock %}

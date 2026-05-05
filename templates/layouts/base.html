@@ -1,0 +1,336 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    {% csrf_token %}
+    <title>Sepela Musique</title>
+    <link rel="icon" type="image/png" href="{% static 'images/logos/favicon.png' %}">
+    <link rel="alternate icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+
+
+
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/line-awesome@1.0.2/css/line-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ionicons/4.5.6/css/ionicons.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.9.0/slick.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/line-awesome@1.0.2/css/line-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ionicons/4.5.6/css/ionicons.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.9.0/slick.min.css">
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet"/>
+    <link href="{% static 'css/select2-bootstrap4.min.css' %}" rel="stylesheet"/>
+
+    
+    <link href="{% static 'css/vendors.bundle.css' %}" rel="stylesheet" type="text/css">
+<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Roboto+Slab:100,300,400,700" rel="stylesheet">
+<!--[if lt IE 9]>
+<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+<![endif]-->
+<link rel="stylesheet" type="text/css"
+      href="http://ajax.googleapis.com/ajax/libs/jqueryui/1/themes/flick/jquery-ui.css">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/tag-it/2.0/css/jquery.tagit.min.css" rel="stylesheet"
+      type="text/css">
+<link href="{% static 'css/styles.bundle.css' %}" rel="stylesheet" type="text/css">
+<link rel="stylesheet" type="text/css" href="{% static 'css/toastr.min.css' %}">
+
+
+
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+
+    <script
+  src="http://code.jquery.com/jquery-3.3.1.min.js"
+  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+  crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css">
+  <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js" ></script>
+    <style>
+        body {font-family: Arial, Helvetica, sans-serif;}
+* {box-sizing: border-box;}
+
+/* Button used to open the contact form - fixed at the bottom of the page */
+.open-button {
+  background-color: #555;
+  color: white;
+  padding: 16px 20px;
+  border: none;
+  cursor: pointer;
+  opacity: 0.8;
+  position: fixed;
+  bottom: 23px;
+  right: 28px;
+  width: 280px;
+}
+
+/* The popup form - hidden by default */
+.form-popup {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  center: 15px;
+  border: 3px solid #f1f1f1;
+  z-index: 9;
+}
+
+/* Add styles to the form container */
+.form-container {
+  max-width: 300px;
+  padding: 10px;
+  background-color: white;
+}
+
+/* Full-width input fields */
+.form-container input[type=text], .form-container input[type=password] {
+  width: 100%;
+  padding: 15px;
+  margin: 5px 0 22px 0;
+  border: none;
+  background: #f1f1f1;
+}
+
+/* When the inputs get focus, do something */
+.form-container input[type=text]:focus, .form-container input[type=password]:focus {
+  background-color: #ddd;
+  outline: none;
+}
+
+/* Set a style for the submit/login button */
+.form-container .btn {
+  background-color: #04AA6D;
+  color: white;
+  padding: 16px 20px;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  margin-bottom:10px;
+  opacity: 0.8;
+}
+
+/* Add a red background color to the cancel button */
+.form-container .cancel {
+  background-color: red;
+}
+
+/* Add some hover effects to buttons */
+.form-container .btn:hover, .open-button:hover {
+  opacity: 1;
+}
+
+.cards{
+    display: inline-block;
+    width: 100%;
+    background-color:   #333333;
+    border-radius: 5px;
+    margin: .25rem;
+    box-shadow2: 2px px 10px black;
+}
+
+
+        @font-face {
+            font-family: LineAwesome;
+            font-weight: 400;
+            font-style: normal
+        }
+
+        @font-face {
+            font-family: Ionicons;
+            font-weight: 400;
+            font-style: normal
+        }
+
+        @font-face {
+            font-family: slick;
+            font-weight: 400;
+            font-style: normal;
+        }
+
+        @media screen and (-webkit-min-device-pixel-ratio: 0) {
+            @font-face {
+                font-family: LineAwesome;
+            }
+        }
+    </style>
+    {% include 'includes/stylesheets.html' %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/custom.css' %}">
+    {% block stylesheets %}{% endblock %}
+</head>
+<body class="theme-dark">
+<div id="loading">
+    <div class="loader">
+        <div class="eq">
+            <span class="eq-bar eq-bar--1"></span>
+            <span class="eq-bar eq-bar--2"></span>
+            <span class="eq-bar eq-bar--3"></span>
+            <span class="eq-bar eq-bar--4"></span>
+            <span class="eq-bar eq-bar--5"></span>
+            <span class="eq-bar eq-bar--6"></span>
+        </div>
+        <span class="text">Loading</span>
+    </div>
+</div>
+<div id="wrapper" data-scrollable="true">
+    
+    
+  
+    
+    {% include 'includes/sidebar.html' %}
+   
+    {% include 'includes/nav.html' %}
+    {% if messages %}
+    
+            {% for message in messages %}
+            <script> alert("{{ message }}");</script>
+            {% endfor %}
+       
+    {% endif %}
+    {% block content %}
+    
+
+
+    
+    
+    {% endblock %}
+</div>
+<div class="modal fade" id="login" tabindex="-1" role="dialog" aria-labelledby="loginTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
+        <div class="modal-content" style="background: linear-gradient(150deg, rgba(20,13,38,0.98), rgba(10,7,20,0.98)); border: 1px solid rgba(255,255,255,.12); border-radius: 18px;">
+            <div class="modal-header border-0 pb-0 align-items-start">
+                <div>
+                    <h6 class="modal-title mb-1 text-white" id="loginTitle">Artist Login</h6>
+                    <small class="text-white-50">Sign in to manage uploads and votes.</small>
+                </div>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body pt-3" style="max-height: min(70vh, 700px); overflow-y: auto;">
+                <form action="{% url 'accounts:login' %}" class="mx-2 pb-3" id="login-form">
+                    <div class="form-group">
+                        <label class="text-white-50 small mb-1">Email</label>
+                        <input type="email" name="email" class="form-control" placeholder="you@example.com" style="background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.18); color: #fff;">
+                    </div>
+                    <div class="form-group">
+                        <label class="text-white-50 small mb-1">Password</label>
+                        <input type="password" name="password" class="form-control" placeholder="********" style="background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.18); color: #fff;">
+                    </div>
+                    <p id="login-error" class="small mb-2"></p>
+                    <button type="submit" class="btn btn-block" style="background: linear-gradient(90deg, #6d28d9, #c026d3); color: #fff; border-radius: 12px;">Login</button>
+                    <p class="text-center mt-3 mb-0 text-white-50">
+                        No account?
+                        <a href="javascript:void(0);" class="text-info" data-dismiss="modal" data-toggle="modal" data-target="#register">Sign up</a>
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="register" tabindex="-1" role="dialog" aria-labelledby="loginTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
+        <div class="modal-content" style="background: linear-gradient(150deg, rgba(20,13,38,0.98), rgba(10,7,20,0.98)); border: 1px solid rgba(255,255,255,.12); border-radius: 18px;">
+            <div class="modal-header border-0 pb-0 align-items-start">
+                <div>
+                    <h6 class="modal-title mb-1 text-white" id="loginTitle">Register Artist</h6>
+                    <small class="text-white-50">Create your account and start publishing.</small>
+                </div>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body pt-3" style="max-height: min(70vh, 700px); overflow-y: auto;">
+                <form action="{% url 'accounts:register' %}" class="mx-2 pb-3" id="register-form">
+                    <div class="form-group">
+                        <label class="text-white-50 small mb-1">First name</label>
+                        <input name="first_name" type="text" class="form-control" required placeholder="First name" style="background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.18); color: #fff;">
+                    </div>
+                    <div class="form-group">
+                        <label class="text-white-50 small mb-1">Last name</label>
+                        <input name="last_name" type="text" class="form-control" required placeholder="Last name" style="background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.18); color: #fff;">
+                    </div>
+                    <div class="form-group">
+                        <label class="text-white-50 small mb-1">Username</label>
+                        <input name="username" type="text" class="form-control" required placeholder="Username" style="background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.18); color: #fff;">
+                    </div>
+                    <div class="form-group">
+                        <label class="text-white-50 small mb-1">Email</label>
+                        <input name="email" type="email" class="form-control" required placeholder="you@example.com" style="background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.18); color: #fff;">
+                    </div>
+                    <div class="form-group">
+                        <label class="text-white-50 small mb-1">Password</label>
+                        <input name="password1" type="password" class="form-control" required placeholder="********" style="background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.18); color: #fff;">
+                    </div>
+                    <div class="form-group">
+                        <label class="text-white-50 small mb-1">Confirm password</label>
+                        <input name="password2" type="password" class="form-control" required placeholder="********" style="background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.18); color: #fff;">
+                    </div>
+                    <p id="register-error"></p>
+                    <button type="submit" class="btn btn-block" style="background: linear-gradient(90deg, #6d28d9, #c026d3); color: #fff; border-radius: 12px;">Register</button>
+                    <p class="text-center mt-3 mb-0 text-white-50">
+                        Already have an account?
+                        <a href="javascript:void(0);" class="text-info" data-dismiss="modal" data-toggle="modal" data-target="#login">Login</a>
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+<div class="modal fade" id="email_vote" tabindex="-1" role="dialog" aria-labelledby="loginTitle" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header border-bottom-0 pb-0">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <h6 class="modal-title text-center mb-3" id="loginTitle">Artist Login</h6>
+            <div class="modal-body">
+                <form action="{% url 'core:vote' %}" class="mx-4 pb-5" id="login-form">
+                    <div class="form-group">
+                        <input type="text" name="song_id" class="form-control" value="{{ id }}">
+                    </div>
+                  
+                    <div class="form-group">
+                        <input type="email" name="email" class="form-control" placeholder="Enter email">
+                    </div>
+                    
+                    <p id="login-error"></p>
+                    <button type="submit" class="btn btn-block btn-bold btn-air btn-info">Login</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="backdrop header-backdrop"></div>
+<div class="backdrop sidebar-backdrop"></div>
+<script>
+  (function () {
+    var isTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+    if (!isTouch) return;
+    document.documentElement.style.scrollBehavior = "auto";
+    var els = document.querySelectorAll('[data-scrollable="true"]');
+    els.forEach(function (el) {
+      el.setAttribute("data-scrollable", "native");
+      el.style.overflowY = "auto";
+      el.style.webkitOverflowScrolling = "touch";
+      el.style.overscrollBehavior = "contain";
+    });
+  })();
+</script>
+{% include 'includes/javascripts.html' %}
+
+</body>
+</html>

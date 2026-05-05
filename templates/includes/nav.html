@@ -1,0 +1,231 @@
+{% load static i18n ui_i18n %}
+<header id="header" class="bg-primary">
+    <div class="d-flex align-items-center">
+        <button type="button" class="btn toggle-menu mr-3" id="openSidebar">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <form action="{% url 'core:home' %}" id="searchForm" method="get">
+            <button type="button" class="btn ion-ios-search"></button>
+            <input type="text" name="search_query" placeholder="{% ui 'search_placeholder' %}" value="{{search_query}}" class="form-control" id="search" data-search-url="#">
+            <div class="search-card" data-scrollable="true">
+                <div class="mb-3">
+                    <div class="d-flex">
+                        <span class="text-uppercase mr-auto font-weight-bold text-dark">{% ui 'track' %}</span>
+                        <a href="#">{% ui 'view_all' %}</a>
+                    </div>
+                    <hr>
+                    <div class="row" id="search-track">
+
+                    </div>
+                </div>
+            </div>
+        </form>
+        <ul class="header-options d-flex align-items-center">
+            <li class="mr-2 theme-toggle-wrap">
+                <button type="button" id="themeToggle" class="btn btn-theme-toggle d-flex align-items-center justify-content-center" title="Theme options" aria-label="Theme options" aria-expanded="false">
+                    <i id="themeToggleIcon" class="ion-md-moon"></i>
+                </button>
+                <div id="themeMenu" class="theme-options-menu" aria-hidden="true">
+                    <button type="button" class="theme-option-btn" data-theme-choice="dark">Dark</button>
+                    <button type="button" class="theme-option-btn" data-theme-choice="light">Light</button>
+                </div>
+            </li>
+            <li class="mr-2">
+                <form action="{% url 'set_language' %}" method="post" class="d-flex align-items-center">
+                    {% csrf_token %}
+                    <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                    <label for="lang-select" class="sr-only">{% ui 'language' %}</label>
+                    <select id="lang-select" name="language" class="form-control form-control-sm" onchange="this.form.submit()">
+                        <option value="fr" {% if LANGUAGE_CODE == 'fr' %}selected{% endif %}>FR</option>
+                        <option value="en" {% if LANGUAGE_CODE == 'en' %}selected{% endif %}>EN</option>
+                    </select>
+                </form>
+            </li>
+            {% if request.user.is_authenticated %}
+              {% if upload < 3 %}
+                <li>
+                    <a href="{% url 'core:upload' %}" class="">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                            <path fill="currentColor"
+                                  d="M16,9V7H12V12.5C11.58,12.19 11.07,12 10.5,12A2.5,2.5 0 0,0 8,14.5A2.5,2.5 0 0,0 10.5,17A2.5,2.5 0 0,0 13,14.5V9H16M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2Z">
+                            </path>
+                        </svg>
+                        Upload
+                    </a>
+                </li>
+                {% endif %}
+                
+                <li class="dropdown fade-in">
+                    <a href="javascript:void(0);" class="d-flex align-items-center py-2"
+                       role="button" id="userMenu" data-toggle="dropdown"
+                       aria-haspopup="true" aria-expanded="false">
+                        <div class="avatar avatar-sm avatar-circle">
+                            <img src="{% static 'images/users/avatar.jpg' %}" alt="user">
+                        </div>
+                        <span class="pl-2">{% ui 'hello' %} {{ request.user.first_name }}</span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userMenu">
+                        <a class="dropdown-item" href="#">
+                            <i class="ion-md-contact"></i>
+                            <span>{% ui 'profile' %}</span></a>
+                        <a class="dropdown-item" href="#">
+                            <i class="ion-md-radio-button-off"></i>
+                            <span>{% ui 'your_plan' %}</span>
+                        </a>
+                        <a class="dropdown-item" href="#">
+                            <i class="ion-md-settings"></i>
+                            <span>{% ui 'settings' %}</span>
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <div class="px-4 py-2">
+                            <a href="{% url 'accounts:logout' %}" class="btn btn-sm btn-air btn-pill btn-danger">{% ui 'logout' %}</a>
+                        </div>
+                    </div>
+                </li>
+            {% else %}
+                <li>
+                    <a href="javascript:void(0);" data-toggle="modal" data-target="#login" class="d-flex align-items-center py-2" title="{% ui 'login_signup' %}">
+                        <div class="avatar avatar-sm avatar-circle">
+                            <img src="{% static 'images/users/avatar.jpg' %}" alt="{% ui 'login_signup' %}">
+                        </div>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </div>
+</header>
+
+<script>
+    //PROFILES AND PRODUCT SEARCH
+    $("#search").on("keyup", function(){
+        var value = $(this).val();
+        console.log(value);
+        $("#MyData #MyRow").each(function(e){
+          if(e !== -1){
+            $go = $(this)
+  
+            $go.find('#Data').each(function(){
+              var id = $(this).text();
+  
+              if(id.indexOf(value) !==0 && id.toLowerCase().indexOf(value.toLowerCase()) < 0){
+                $go.hide();
+  
+              }
+              else {
+                $go.show();
+                return false;
+              }
+            });
+          }
+          var isNone = $("#MyData #MyRow:not('#MyRow'):visible");
+  
+          if(isNone.length == 0){
+            $("#no-result").text("{% ui 'no_result_found' %}").show();
+  
+          }
+          else {
+            $("#no-result").text("{% ui 'no_result_found' %}").hide();
+  
+          }
+        })
+      })
+</script>
+
+<script>
+  (function () {
+    var menuOpen = false;
+
+    function updateThemeIcon() {
+      var icon = document.getElementById("themeToggleIcon");
+      if (!icon) return;
+      var isDark = document.body.classList.contains("theme-dark");
+      icon.className = isDark ? "ion-md-moon" : "ion-md-sunny";
+    }
+
+    function applyTheme(mode) {
+      var dark = mode !== "light";
+      document.body.classList.toggle("theme-dark", dark);
+      document.body.classList.toggle("theme-light", !dark);
+      try {
+        localStorage.setItem("kina_theme", dark ? "dark" : "light");
+      } catch (e) {}
+      syncThemeButtons();
+      updateThemeIcon();
+    }
+
+    function syncThemeButtons() {
+      var darkActive = document.body.classList.contains("theme-dark");
+      document.querySelectorAll(".theme-option-btn").forEach(function (btn) {
+        var isDarkBtn = btn.getAttribute("data-theme-choice") === "dark";
+        btn.classList.toggle("active", darkActive ? isDarkBtn : !isDarkBtn);
+      });
+    }
+
+    function setThemeMode(mode) {
+      applyTheme(mode === "light" ? "light" : "dark");
+    }
+
+    function setMenuOpen(open) {
+      var menu = document.getElementById("themeMenu");
+      var btn = document.getElementById("themeToggle");
+      if (!menu || !btn) return;
+      menuOpen = !!open;
+      menu.classList.toggle("show", menuOpen);
+      menu.setAttribute("aria-hidden", menuOpen ? "false" : "true");
+      btn.setAttribute("aria-expanded", menuOpen ? "true" : "false");
+    }
+
+    window.toggleThemeMode = function () {
+      var isDark = document.body.classList.contains("theme-dark");
+      setThemeMode(isDark ? "light" : "dark");
+    };
+
+    function bindThemeButton() {
+      var btn = document.getElementById("themeToggle");
+      var menu = document.getElementById("themeMenu");
+      if (!btn || !menu) return;
+
+      try {
+        var saved = localStorage.getItem("kina_theme");
+        if (saved === "dark" || saved === "light") applyTheme(saved);
+        else {
+          syncThemeButtons();
+          updateThemeIcon();
+        }
+      } catch (e) {
+        syncThemeButtons();
+        updateThemeIcon();
+      }
+
+      btn.onclick = function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setMenuOpen(!menuOpen);
+      };
+
+      menu.querySelectorAll(".theme-option-btn").forEach(function (optionBtn) {
+        optionBtn.onclick = function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          setThemeMode(optionBtn.getAttribute("data-theme-choice"));
+          setMenuOpen(false);
+        };
+      });
+
+      document.addEventListener("click", function (e) {
+        if (!menuOpen) return;
+        if (e.target.closest(".theme-toggle-wrap")) return;
+        setMenuOpen(false);
+      });
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", bindThemeButton);
+    } else {
+      bindThemeButton();
+    }
+  })();
+</script>
+

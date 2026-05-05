@@ -1,0 +1,144 @@
+{% extends 'layouts/base.html' %}
+{% load static ui_i18n %}
+
+{% block stylesheets %}
+{% include 'includes/tw_theme_setup.html' %}
+{% endblock %}
+
+{% block content %}
+<main id="pageWrapper" class="home-page-premium tw-min-h-screen tw-bg-[#07060b]">
+    <div class="premium-page tw-relative tw-min-h-screen tw-pb-16">
+        <div class="premium-mesh" aria-hidden="true"></div>
+        <div class="premium-content tw-max-w-screen-2xl tw-mx-auto tw-px-4 sm:tw-px-6 lg:tw-px-8 tw-pt-16 md:tw-pt-20">
+            <header class="tw-mb-8">
+                <p class="tw-font-sans tw-text-xs tw-font-semibold tw-tracking-[0.2em] tw-text-fuchsia-400/90 tw-uppercase tw-mb-2">{% ui 'admin_workspace' %}</p>
+                <h1 class="tw-font-display tw-text-3xl sm:tw-text-4xl tw-font-bold tw-leading-tight">
+                    <span class="tw-bg-gradient-to-r tw-from-violet-300 tw-via-fuchsia-400 tw-to-cyan-300 tw-bg-clip-text tw-text-transparent">{% ui 'admin_dashboard' %}</span>
+                </h1>
+                <p class="tw-mt-3 tw-text-white/55 tw-font-sans tw-max-w-2xl">{% ui 'admin_desc' %}</p>
+            </header>
+
+            <section class="tw-grid tw-grid-cols-2 lg:tw-grid-cols-4 tw-gap-4 tw-mb-8 tw-font-sans">
+                <div class="tw-rounded-2xl tw-border tw-border-white/[0.08] tw-bg-white/[0.03] tw-p-4 tw-backdrop-blur-sm"><p class="tw-text-xs tw-uppercase tw-tracking-wide tw-text-white/45">{% ui 'artists' %}</p><p class="tw-mt-1 tw-text-2xl tw-font-bold tw-text-white">{{ uploads }}</p></div>
+                <div class="tw-rounded-2xl tw-border tw-border-white/[0.08] tw-bg-white/[0.03] tw-p-4 tw-backdrop-blur-sm"><p class="tw-text-xs tw-uppercase tw-tracking-wide tw-text-white/45">{% ui 'songs' %}</p><p class="tw-mt-1 tw-text-2xl tw-font-bold tw-text-white">{{ total_songs }}</p></div>
+                <div class="tw-rounded-2xl tw-border tw-border-white/[0.08] tw-bg-white/[0.03] tw-p-4 tw-backdrop-blur-sm"><p class="tw-text-xs tw-uppercase tw-tracking-wide tw-text-white/45">{% ui 'vote' %}</p><p class="tw-mt-1 tw-text-2xl tw-font-bold tw-text-white">{{ total_votes }}</p></div>
+                <div class="tw-rounded-2xl tw-border tw-border-white/[0.08] tw-bg-white/[0.03] tw-p-4 tw-backdrop-blur-sm"><p class="tw-text-xs tw-uppercase tw-tracking-wide tw-text-white/45">{% ui 'contacts' %}</p><p class="tw-mt-1 tw-text-2xl tw-font-bold tw-text-white">{{ total_contacts }}</p></div>
+            </section>
+
+            <section class="tw-rounded-3xl tw-border tw-border-white/[0.08] tw-bg-white/[0.03] tw-backdrop-blur-md tw-p-5 sm:tw-p-6 tw-mb-8">
+                <h2 class="tw-font-display tw-text-xl tw-font-semibold tw-text-white tw-mb-4">{% ui 'site_settings' %}</h2>
+                <form method="post" action="{% url 'core:app_administration' %}" class="tw-font-sans">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="save_site_settings">
+                    <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-4">
+                        <input type="text" name="site_title" value="{{ site_settings.site_title }}" required class="tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white" placeholder="Site title">
+                        <input type="email" name="contact_email" value="{{ site_settings.contact_email }}" required class="tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white" placeholder="Contact email">
+                        <input type="text" name="contact_phone" value="{{ site_settings.contact_phone }}" class="tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white" placeholder="Contact phone">
+                        <input type="email" name="vote_from_email" value="{{ site_settings.vote_from_email }}" required class="tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white" placeholder="Vote from email">
+                        <textarea rows="3" name="contact_address" class="md:tw-col-span-2 tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white" placeholder="Contact address">{{ site_settings.contact_address }}</textarea>
+                    </div>
+                    <button type="submit" class="tw-mt-4 tw-inline-flex tw-items-center tw-rounded-xl tw-bg-gradient-to-r tw-from-violet-600 tw-to-fuchsia-600 tw-px-5 tw-py-2.5 tw-text-sm tw-font-semibold tw-text-white">{% ui 'save_settings' %}</button>
+                </form>
+            </section>
+
+            <section class="tw-mb-8 tw-font-sans">
+                <div class="tw-flex tw-flex-wrap tw-items-end tw-justify-between tw-gap-4 tw-mb-5">
+                    <div>
+                        <h2 class="tw-font-display tw-text-xl tw-font-semibold tw-text-white tw-tracking-tight">{% ui 'recent_songs_moderation' %}</h2>
+                    </div>
+                </div>
+                {% if recent_songs %}
+                <div class="yt-track-grid tw-w-full">
+                    {% for song in recent_songs %}
+                        {% include 'includes/admin_yt_song_card.html' with song=song mode='dashboard' %}
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="tw-rounded-2xl tw-border tw-border-dashed tw-border-white/15 tw-bg-white/[0.02] tw-py-14 tw-px-6 tw-text-center">
+                    <p class="tw-text-sm tw-text-white/45">{% ui 'no_songs_found' %}</p>
+                </div>
+                {% endif %}
+            </section>
+
+            <div class="tw-grid tw-grid-cols-1 lg:tw-grid-cols-2 tw-gap-6 tw-pb-4">
+                <section class="tw-rounded-3xl tw-border tw-border-white/[0.08] tw-bg-white/[0.03] tw-backdrop-blur-md tw-p-5 sm:tw-p-6">
+                    <h2 class="tw-font-display tw-text-lg tw-font-semibold tw-text-white tw-mb-4">{% ui 'recent_votes' %}</h2>
+                    <div class="tw-space-y-2 md:tw-hidden">
+                        {% for vote in recent_votes %}
+                        <article class="tw-rounded-xl tw-border tw-border-white/[0.08] tw-bg-white/[0.02] tw-p-3">
+                            <p class="tw-text-xs tw-text-white/55">{% ui 'songs' %}</p>
+                            <p class="tw-text-sm tw-font-semibold tw-text-white tw-break-words">{{ vote.song_title }}</p>
+                            <p class="tw-mt-2 tw-text-xs tw-text-white/55">{% ui 'voter_email' %}</p>
+                            <p class="tw-text-sm tw-text-white/80 tw-break-all">{{ vote.voter_Email }}</p>
+                        </article>
+                        {% empty %}
+                        <p class="tw-text-sm tw-text-white/45">{% ui 'no_votes_yet' %}</p>
+                        {% endfor %}
+                    </div>
+                    <div class="tw-hidden md:tw-block tw-overflow-x-auto">
+                        <table class="tw-min-w-full tw-text-sm tw-font-sans">
+                            <thead class="tw-text-white/55">
+                                <tr class="tw-border-b tw-border-white/10">
+                                    <th class="tw-text-left tw-font-semibold tw-px-3 tw-py-3">{% ui 'songs' %}</th>
+                                    <th class="tw-text-left tw-font-semibold tw-px-3 tw-py-3">{% ui 'voter_email' %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for vote in recent_votes %}
+                                <tr class="tw-border-b tw-border-white/5 last:tw-border-0">
+                                    <td class="tw-px-3 tw-py-3 tw-text-white/85">{{ vote.song_title }}</td>
+                                    <td class="tw-px-3 tw-py-3 tw-text-white/70">{{ vote.voter_Email }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr><td colspan="2" class="tw-px-3 tw-py-6 tw-text-center tw-text-white/45">{% ui 'no_votes_yet' %}</td></tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section class="tw-rounded-3xl tw-border tw-border-white/[0.08] tw-bg-white/[0.03] tw-backdrop-blur-md tw-p-5 sm:tw-p-6">
+                    <h2 class="tw-font-display tw-text-lg tw-font-semibold tw-text-white tw-mb-4">{% ui 'recent_contacts' %}</h2>
+                    <div class="tw-space-y-2 md:tw-hidden">
+                        {% for item in recent_contacts %}
+                        <article class="tw-rounded-xl tw-border tw-border-white/[0.08] tw-bg-white/[0.02] tw-p-3">
+                            <p class="tw-text-xs tw-text-white/55">{% ui 'contact' %}</p>
+                            <p class="tw-text-sm tw-text-white/80 tw-break-all">{{ item.email }}</p>
+                            <p class="tw-mt-2 tw-text-xs tw-text-white/55">{% ui 'subject' %}</p>
+                            <p class="tw-text-sm tw-text-white/90 tw-break-words">{{ item.subject }}</p>
+                            <p class="tw-mt-2 tw-text-xs tw-text-white/55">{% ui 'message_content' %}</p>
+                            <p class="tw-text-sm tw-text-white/70 tw-whitespace-pre-line tw-break-words">{{ item.message|truncatechars:180 }}</p>
+                        </article>
+                        {% empty %}
+                        <p class="tw-text-sm tw-text-white/45">{% ui 'no_contacts' %}</p>
+                        {% endfor %}
+                    </div>
+                    <div class="tw-hidden md:tw-block tw-overflow-x-auto">
+                        <table class="tw-min-w-full tw-text-sm tw-font-sans">
+                            <thead class="tw-text-white/55">
+                                <tr class="tw-border-b tw-border-white/10">
+                                    <th class="tw-text-left tw-font-semibold tw-px-3 tw-py-3">{% ui 'contact' %}</th>
+                                    <th class="tw-text-left tw-font-semibold tw-px-3 tw-py-3">{% ui 'subject' %}</th>
+                                    <th class="tw-text-left tw-font-semibold tw-px-3 tw-py-3">{% ui 'message_content' %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for item in recent_contacts %}
+                                <tr class="tw-border-b tw-border-white/5 last:tw-border-0">
+                                    <td class="tw-px-3 tw-py-3 tw-text-white/70">{{ item.email }}</td>
+                                    <td class="tw-px-3 tw-py-3 tw-text-white/85">{{ item.subject }}</td>
+                                    <td class="tw-px-3 tw-py-3 tw-text-white/70 tw-max-w-xs tw-break-words">{{ item.message|truncatechars:180 }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr><td colspan="3" class="tw-px-3 tw-py-6 tw-text-center tw-text-white/45">{% ui 'no_contacts' %}</td></tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+    {% include 'includes/footer.html' %}
+</main>
+{% endblock %}

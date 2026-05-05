@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: sepela-musique
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt && python manage.py migrate && python manage.py collectstatic --noinput
+    startCommand: gunicorn music.wsgi:application
+    envVars:
+      - key: DJANGO_DEBUG
+        value: "false"
+      - key: DJANGO_ALLOWED_HOSTS
+        value: sepela-musique.onrender.com
+      - key: CSRF_TRUSTED_ORIGINS
+        value: https://sepela-musique.onrender.com
+      - key: SECURE_SSL_REDIRECT
+        value: "true"
+      - key: SESSION_COOKIE_SECURE
+        value: "true"
+      - key: CSRF_COOKIE_SECURE
+        value: "true"
+      - key: SECURE_HSTS_SECONDS
+        value: "31536000"
+      - key: SECURE_HSTS_INCLUDE_SUBDOMAINS
+        value: "true"
+      - key: SECURE_HSTS_PRELOAD
+        value: "true"
+      - key: USE_X_FORWARDED_PROTO
+        value: "true"
+      - key: DJANGO_SECRET_KEY
+        generateValue: true

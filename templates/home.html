@@ -1,0 +1,158 @@
+{% extends 'layouts/base.html' %}
+{% load static ui_i18n humanize %}
+
+{% block stylesheets %}
+{% include 'includes/tw_theme_setup.html' %}
+{% endblock %}
+
+{% block content %}
+
+<main id="pageWrapper" class="home-page-premium tw-min-h-screen tw-bg-[#07060b]">
+
+    <div class="banner bg-home"></div>
+
+    <div class="premium-page tw-relative tw-min-h-screen tw-pb-16">
+        <div class="premium-mesh" aria-hidden="true"></div>
+
+        <div class="premium-content tw-max-w-screen-2xl tw-mx-auto tw-px-4 sm:tw-px-6 lg:tw-px-8 tw-pt-16 md:tw-pt-20">
+
+            <header class="tw-pt-8 md:tw-pt-10 tw-pb-8 md:tw-pb-10 tw-opacity-0 tw-animate-fade-up" style="animation-fill-mode: forwards;">
+                <div class="tw-flex tw-flex-wrap tw-items-center tw-gap-2 tw-mb-5">
+                    <span class="tw-inline-flex tw-items-center tw-gap-2 tw-rounded-full tw-bg-white/[0.06] tw-border tw-border-white/[0.08] tw-px-3 tw-py-1 tw-text-[11px] tw-font-semibold tw-tracking-wider tw-text-white/70 tw-font-sans tw-uppercase">
+                        <span class="tw-h-1.5 tw-w-1.5 tw-rounded-full tw-bg-emerald-400 tw-animate-pulse"></span>
+                        {% ui 'live_catalogue' %}
+                    </span>
+                    {% if request.user.is_authenticated and request.user.user_type != 1 %}
+                    <span class="tw-inline-flex tw-rounded-full tw-bg-violet-500/20 tw-border tw-border-violet-400/30 tw-px-3 tw-py-1 tw-text-[11px] tw-font-semibold tw-text-violet-100 tw-font-sans">
+                        {% ui 'your_uploads' %} · {{ upload }}
+                    </span>
+                    {% endif %}
+                </div>
+
+                <p class="tw-font-sans tw-text-xs tw-font-semibold tw-tracking-[0.2em] tw-text-fuchsia-400/90 tw-uppercase tw-mb-2">{{ site_settings.site_title|default:"Sepela Musique" }}</p>
+                <h1 class="tw-font-display tw-text-3xl sm:tw-text-4xl md:tw-text-[2.75rem] tw-font-bold tw-leading-tight tw-max-w-3xl">
+                    <span class="tw-bg-gradient-to-r tw-from-violet-300 tw-via-fuchsia-400 tw-to-cyan-300 tw-bg-clip-text tw-text-transparent">{% ui 'discover_vote' %}</span>
+                    <span class="tw-block tw-mt-2 tw-text-white tw-text-2xl sm:tw-text-3xl md:tw-text-[2rem] tw-font-semibold">{% ui 'amplify_scene' %}</span>
+                </h1>
+                <p class="tw-mt-4 tw-max-w-xl tw-text-base tw-text-white/50 tw-font-sans tw-leading-relaxed">
+                    {% ui 'home_hero_desc' %}
+                </p>
+                <div class="tw-mt-6 tw-flex tw-flex-wrap tw-gap-3 tw-font-sans">
+                    <a href="#tracks-grid" class="tw-inline-flex tw-items-center tw-gap-2 tw-rounded-full tw-bg-gradient-to-r tw-from-violet-600 tw-to-fuchsia-600 tw-px-6 tw-py-3 tw-text-sm tw-font-semibold tw-text-white tw-shadow-lg tw-shadow-violet-600/30 tw-transition hover:tw-scale-[1.02] hover:tw-shadow-xl focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-fuchsia-400/50">
+                        {% ui 'explore_tracks' %}
+                        <span aria-hidden="true">↓</span>
+                    </a>
+                    {% if not request.user.is_authenticated %}
+                    <a href="{% url 'core:about' %}" class="tw-inline-flex tw-items-center tw-rounded-full tw-border tw-border-white/20 tw-bg-white/[0.04] tw-px-6 tw-py-3 tw-text-sm tw-font-semibold tw-text-white/90 tw-backdrop-blur-sm tw-transition hover:tw-bg-white/[0.08]">
+                        {% ui 'contact' %}
+                    </a>
+                    {% endif %}
+                </div>
+            </header>
+
+            <div class="tw-flex tw-flex-col tw-gap-8 lg:tw-gap-10 tw-w-full tw-opacity-0 tw-animate-fade-up-delay" style="animation-fill-mode: forwards;">
+
+                <div class="tw-w-full tw-shrink-0">
+                    {% include 'includes/leaderboard.html' %}
+                </div>
+
+                <div id="tracks-grid" class="tw-w-full tw-min-w-0 tw-scroll-mt-24">
+                    <div class="tw-flex tw-items-end tw-justify-between tw-gap-4 tw-mb-6">
+                        <div>
+                            <h2 class="tw-font-display tw-text-xl md:tw-text-2xl tw-font-bold tw-text-white tw-tracking-tight">{% ui 'featured_tracks' %}</h2>
+                            <p class="tw-mt-1 tw-text-sm tw-text-white/45 tw-font-sans">{% ui 'published_picks' %}</p>
+                        </div>
+                    </div>
+
+                    {% if songs %}
+                    <div class="yt-track-grid tw-w-full tw-font-sans">
+                        {% for song in songs %}
+                        <article class="yt-track-card tw-group tw-relative tw-min-w-0">
+                            <span class="track-vote-pill tw-pointer-events-none tw-absolute tw-right-2 tw-top-2 tw-z-20 tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-lg tw-border tw-border-white/[0.1] tw-px-2 tw-py-1 tw-backdrop-blur-md sm:tw-right-2.5 sm:tw-top-2.5 sm:tw-rounded-xl sm:tw-px-2.5 sm:tw-py-1.5" title="{{ song.votes }} {% ui 'votes_suffix' %}">
+                                <span class="tw-flex tw-h-6 tw-w-6 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-md tw-bg-white/[0.08]" aria-hidden="true">
+                                    <svg class="tw-h-3 tw-w-3 tw-text-emerald-400/85" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
+                                <span class="track-vote-count tw-text-lg tw-font-semibold tw-tabular-nums tw-tracking-tight tw-text-white sm:tw-text-xl">{{ song.votes }}</span>
+                            </span>
+                            <div class="yt-thumb-wrap tw-relative tw-aspect-video tw-overflow-hidden tw-rounded-xl tw-bg-zinc-950 tw-shadow-[0_4px_24px_-8px_rgba(0,0,0,0.75)] tw-ring-1 tw-ring-white/[0.06]">
+                                {% if song.song %}
+                                <video src="{{ song.song.url }}" poster="{% if song.thumbnail %}{{ song.thumbnail.url }}{% else %}{% static 'images/logos/sepelamusique.png' %}{% endif %}" controls preload="metadata" playsinline class="tw-absolute tw-inset-0 tw-h-full tw-w-full tw-object-cover"></video>
+                                {% elif song.thumbnail %}
+                                <img src="{{ song.thumbnail.url }}" alt="" class="tw-absolute tw-inset-0 tw-h-full tw-w-full tw-object-cover">
+                                {% else %}
+                                <div class="tw-flex tw-absolute tw-inset-0 tw-items-center tw-justify-center tw-bg-zinc-900 tw-text-2xl tw-text-white/25" aria-hidden="true">♪</div>
+                                {% endif %}
+                                {% if not song.song %}
+                                <div class="tw-pointer-events-none tw-absolute tw-inset-0 tw-bg-gradient-to-t tw-from-black/55 tw-via-transparent tw-to-transparent"></div>
+                                {% endif %}
+                            </div>
+
+                            <div class="tw-flex tw-gap-3 tw-pt-3 tw-pr-0">
+                                {% if song.user.avatar %}
+                                <img src="{{ song.user.avatar.url }}" alt="" class="tw-mt-0.5 tw-h-9 tw-w-9 tw-shrink-0 tw-rounded-full tw-object-cover tw-bg-zinc-800 tw-ring-1 tw-ring-white/10" width="36" height="36" loading="lazy" decoding="async">
+                                {% else %}
+                                <div class="tw-mt-0.5 tw-flex tw-h-9 tw-w-9 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-full tw-bg-gradient-to-br tw-from-violet-600 tw-to-fuchsia-600 tw-text-[13px] tw-font-bold tw-text-white tw-ring-1 tw-ring-white/10" aria-hidden="true">{{ song.user.first_name|default:song.user.email|slice:":1"|upper }}</div>
+                                {% endif %}
+
+                                <div class="tw-min-w-0 tw-flex-1 tw-text-left">
+                                    <h3 class="tw-text-[13px] tw-font-semibold tw-leading-snug tw-text-white tw-line-clamp-2 group-hover:tw-text-violet-200 tw-transition-colors sm:tw-text-sm">{{ song.title }}</h3>
+                                    <p class="tw-mt-1 tw-text-[12px] tw-leading-snug tw-text-white/55">
+                                        {% if song.user.first_name or song.user.last_name %}
+                                        {{ song.user.first_name }}{% if song.user.last_name %} {{ song.user.last_name }}{% endif %}
+                                        {% else %}
+                                        {{ song.user.email }}
+                                        {% endif %}
+                                    </p>
+                                    <p class="tw-mt-0.5 tw-text-[11px] tw-leading-snug tw-text-white/40">
+                                        {{ song.date|naturaltime }}
+                                    </p>
+                                    {% if not request.user.is_authenticated %}
+                                    <a href="{% url 'core:vote_view' song.id %}" class="tw-mt-2 tw-inline-flex tw-w-full tw-items-center tw-justify-center tw-rounded-full tw-bg-white/[0.08] tw-py-2 tw-text-[11px] tw-font-semibold tw-text-white tw-ring-1 tw-ring-white/[0.08] tw-transition hover:tw-bg-gradient-to-r hover:tw-from-violet-600 hover:tw-to-fuchsia-600 hover:tw-ring-transparent focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-fuchsia-400/40">
+                                        {% ui 'vote' %}
+                                    </a>
+                                    {% endif %}
+                                </div>
+
+                                {% if request.user.is_authenticated %}
+                                <details class="yt-track-menu tw-relative tw-shrink-0">
+                                    <summary class="tw-mt-0.5 tw-flex tw-h-8 tw-w-8 tw-cursor-pointer tw-list-none tw-items-center tw-justify-center tw-rounded-full tw-text-white/55 tw-outline-none hover:tw-bg-white/10 hover:tw-text-white/90 focus-visible:tw-ring-2 focus-visible:tw-ring-violet-400/50" aria-label="{% ui 'more_actions' %}"><span class="tw-select-none tw-text-lg tw-leading-none" aria-hidden="true">⋮</span></summary>
+                                    <div class="tw-absolute tw-right-0 tw-top-full tw-z-30 tw-mt-1 tw-min-w-[158px] tw-overflow-hidden tw-rounded-xl tw-border tw-border-white/12 tw-bg-[#0f0f14]/96 tw-py-1 tw-shadow-2xl tw-backdrop-blur-md">
+                                        <a href="{% url 'core:update_song' song.id %}" class="tw-block tw-px-3 tw-py-2 tw-text-[12px] tw-font-semibold tw-text-white/90 hover:tw-bg-white/[0.06]">{% ui 'edit' %}</a>
+                                        <a href="{% url 'core:delete_song' song.id %}" class="tw-block tw-px-3 tw-py-2 tw-text-[12px] tw-font-semibold tw-text-rose-200 hover:tw-bg-rose-500/15">{% ui 'delete' %}</a>
+                                        <div class="tw-my-1 tw-border-t tw-border-white/[0.06]"></div>
+                                        <div class="tw-px-3 tw-py-2 tw-text-[11px] tw-font-semibold tw-text-white/45">
+                                            {% if song.status == "0" %}
+                                            {% ui 'pending' %}
+                                            {% elif song.status == "1" %}
+                                            {% ui 'accepted' %}
+                                            {% elif song.status == "2" %}
+                                            {% ui 'published' %}
+                                            {% else %}
+                                            {% ui 'rejected' %}
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </details>
+                                {% endif %}
+                            </div>
+                        </article>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="tw-rounded-3xl tw-border tw-border-dashed tw-border-white/15 tw-bg-white/[0.02] tw-py-16 tw-px-8 tw-text-center">
+                        <div class="tw-mx-auto tw-mb-5 tw-flex tw-h-14 tw-w-14 tw-items-center tw-justify-center tw-rounded-2xl tw-bg-gradient-to-br tw-from-violet-500/30 tw-to-fuchsia-600/20 tw-text-2xl tw-ring-1 tw-ring-white/10" aria-hidden="true">♪</div>
+                        <h3 class="tw-font-display tw-text-lg tw-font-bold tw-text-white">{% ui 'no_videos_yet' %}</h3>
+                        <p class="tw-mt-2 tw-max-w-md tw-mx-auto tw-text-sm tw-text-white/45 tw-font-sans">{% ui 'no_videos_desc' %}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include 'includes/footer.html' %}
+</main>
+
+{% endblock %}

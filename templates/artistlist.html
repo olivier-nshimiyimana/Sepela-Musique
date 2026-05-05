@@ -1,0 +1,54 @@
+{% extends 'layouts/base.html' %}
+{% load static ui_i18n %}
+
+{% block stylesheets %}
+{% include 'includes/tw_theme_setup.html' %}
+{% endblock %}
+
+{% block content %}
+<main id="pageWrapper" class="home-page-premium tw-min-h-screen tw-bg-[#07060b]">
+    <div class="banner bg-home"></div>
+    <div class="premium-page tw-relative tw-min-h-screen tw-pb-16">
+        <div class="premium-mesh" aria-hidden="true"></div>
+        <div class="premium-content tw-max-w-screen-2xl tw-mx-auto tw-px-4 sm:tw-px-6 lg:tw-px-8 tw-pt-16 md:tw-pt-20 tw-font-sans">
+            <header class="tw-mb-8">
+                <p class="tw-text-xs tw-font-semibold tw-tracking-[0.2em] tw-text-fuchsia-400/90 tw-uppercase tw-mb-2">{% ui 'admin_workspace' %}</p>
+                <h1 class="tw-font-display tw-text-2xl sm:tw-text-3xl tw-font-bold tw-text-white tw-tracking-tight">
+                    <span class="tw-bg-gradient-to-r tw-from-violet-300 tw-via-fuchsia-400 tw-to-cyan-300 tw-bg-clip-text tw-text-transparent">{% ui 'artist_list' %}</span>
+                </h1>
+                <p class="tw-mt-2 tw-text-sm tw-text-white/50">{% ui 'artists' %} · {{ artists|length }}</p>
+            </header>
+
+            {% if artists %}
+            <div class="yt-track-grid tw-w-full">
+                {% for artist in artists %}
+                <article class="yt-track-card tw-group tw-relative tw-min-w-0">
+                    <div class="yt-thumb-wrap tw-relative tw-aspect-video tw-overflow-hidden tw-rounded-xl tw-bg-zinc-950 tw-shadow-[0_4px_24px_-8px_rgba(0,0,0,0.75)] tw-ring-1 tw-ring-white/[0.06]">
+                        <div class="tw-absolute tw-inset-0 tw-flex tw-items-center tw-justify-center tw-bg-gradient-to-b tw-from-zinc-900/80 tw-to-zinc-950">
+                            {% if artist.avatar %}
+                            <img src="{{ artist.avatar.url }}" alt="" class="tw-h-24 tw-w-24 tw-shrink-0 tw-rounded-full tw-object-cover tw-ring-2 tw-ring-white/15" loading="lazy" decoding="async" width="96" height="96">
+                            {% else %}
+                            <div class="tw-flex tw-h-24 tw-w-24 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-full tw-bg-gradient-to-br tw-from-violet-600 tw-to-fuchsia-600 tw-text-2xl tw-font-bold tw-text-white tw-ring-2 tw-ring-white/15" aria-hidden="true">{{ artist.first_name|default:artist.email|slice:":1"|upper }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="tw-pt-3 tw-font-sans">
+                        <h3 class="tw-text-[13px] tw-font-semibold tw-leading-snug tw-text-white tw-line-clamp-2 group-hover:tw-text-violet-200 tw-transition-colors sm:tw-text-sm">{{ artist.first_name }} {{ artist.last_name }}</h3>
+                        <p class="tw-mt-1 tw-break-all tw-text-[12px] tw-leading-snug tw-text-white/55">{{ artist.email }}</p>
+                        <div class="tw-mt-2">
+                            <a href="mailto:{{ artist.email }}" class="tw-inline-flex tw-items-center tw-rounded-lg tw-border tw-border-white/15 tw-bg-white/[0.06] tw-px-3 tw-py-1.5 tw-text-[11px] tw-font-semibold tw-text-white/85 hover:tw-bg-white/12">{% ui 'contact' %}</a>
+                        </div>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="tw-rounded-2xl tw-border tw-border-dashed tw-border-white/15 tw-bg-white/[0.02] tw-py-14 tw-px-6 tw-text-center">
+                <p class="tw-text-white/55">{% ui 'no_result_found' %}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% include 'includes/footer.html' %}
+</main>
+{% endblock %}

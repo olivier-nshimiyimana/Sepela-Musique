@@ -1,0 +1,93 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block stylesheets %}
+{% include 'includes/tw_theme_setup.html' %}
+{% endblock %}
+
+{% block content %}
+
+<main id="pageWrapper" class="vote-page-premium tw-min-h-screen tw-bg-[#07060b]">
+    <div class="banner bg-song"></div>
+
+    <div class="premium-page tw-relative tw-min-h-screen tw-py-10 tw-pb-20">
+        <div class="premium-mesh" aria-hidden="true"></div>
+
+        <div class="premium-content tw-max-w-xl tw-mx-auto tw-px-4 sm:tw-px-6">
+
+            <header class="tw-mb-8 tw-opacity-0 tw-animate-fade-up" style="animation-fill-mode: forwards;">
+                <p class="tw-font-sans tw-text-xs tw-font-semibold tw-tracking-[0.2em] tw-text-fuchsia-400/90 tw-uppercase tw-mb-2">Artist upload</p>
+                <h1 class="tw-font-display tw-text-2xl sm:tw-text-3xl tw-font-bold tw-text-white tw-tracking-tight">Add a track</h1>
+                <p class="tw-mt-3 tw-text-sm tw-text-white/50 tw-font-sans tw-leading-relaxed">
+                    Provide a <strong class="tw-text-white/80">video</strong> and/or a <strong class="tw-text-white/80">thumbnail image</strong>. At least one is required so listeners can vote.
+                </p>
+            </header>
+
+            <div class="tw-rounded-3xl tw-border tw-border-white/[0.08] tw-bg-white/[0.04] tw-backdrop-blur-xl tw-p-6 sm:tw-p-8 tw-shadow-[0_25px_80px_-20px_rgba(124,58,237,0.35)] tw-opacity-0 tw-animate-fade-up-delay tw-font-sans" style="animation-fill-mode: forwards;">
+                <form action="{% url 'core:upload' %}" method="post" enctype="multipart/form-data" class="tw-space-y-5" id="song-create-form">
+                    {% csrf_token %}
+
+                    <div>
+                        <label for="songName" class="tw-block tw-text-xs tw-font-semibold tw-tracking-wide tw-text-white/50 tw-mb-2 tw-uppercase">Song name</label>
+                        <input type="text" name="song_title" id="songName" required
+                            class="tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/30 tw-px-4 tw-py-3 tw-text-sm tw-text-white tw-placeholder-white/30 tw-outline-none focus:tw-border-violet-400/50 focus:tw-ring-2 focus:tw-ring-violet-500/30"
+                            placeholder="Track title">
+                    </div>
+
+                    <div>
+                        <label for="songFile" class="tw-block tw-text-xs tw-font-semibold tw-tracking-wide tw-text-white/50 tw-mb-2 tw-uppercase">Video file</label>
+                        <input type="file" name="song_file" id="songFile" accept="video/*,.mkv,.mp4,.webm,.mov,.m4v"
+                            class="tw-block tw-w-full tw-text-sm tw-text-white/70 file:tw-mr-4 file:tw-rounded-lg file:tw-border-0 file:tw-bg-violet-600 file:tw-px-4 file:tw-py-2 file:tw-text-sm file:tw-font-semibold file:tw-text-white hover:file:tw-bg-violet-500">
+                        <p class="tw-mt-1.5 tw-text-xs tw-text-white/35">Optional if you upload a thumbnail below.</p>
+                    </div>
+
+                    <div>
+                        <label for="thumbnail" class="tw-block tw-text-xs tw-font-semibold tw-tracking-wide tw-text-white/50 tw-mb-2 tw-uppercase">Thumbnail image</label>
+                        <input type="file" name="thumbnail" id="thumbnail" accept="image/jpeg,image/png,image/webp,image/gif"
+                            class="tw-block tw-w-full tw-text-sm tw-text-white/70 file:tw-mr-4 file:tw-rounded-lg file:tw-border-0 file:tw-bg-fuchsia-600 file:tw-px-4 file:tw-py-2 file:tw-text-sm file:tw-font-semibold file:tw-text-white hover:file:tw-bg-fuchsia-500">
+                        <p class="tw-mt-1.5 tw-text-xs tw-text-white/35">Optional if you upload a video above. Need at least one.</p>
+                    </div>
+
+                    <div>
+                        <label for="description" class="tw-block tw-text-xs tw-font-semibold tw-tracking-wide tw-text-white/50 tw-mb-2 tw-uppercase">Description</label>
+                        <textarea name="description" id="description" required rows="5"
+                            class="tw-w-full tw-min-h-[120px] tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/30 tw-px-4 tw-py-3 tw-text-sm tw-text-white tw-placeholder-white/30 tw-outline-none focus:tw-border-violet-400/50 focus:tw-ring-2 focus:tw-ring-violet-500/30"
+                            placeholder="Tell listeners about this track…"></textarea>
+                    </div>
+
+                    <div class="tw-flex tw-flex-col sm:tw-flex-row tw-gap-3 tw-pt-2">
+                        <button type="submit" class="tw-inline-flex tw-flex-1 tw-items-center tw-justify-center tw-rounded-xl tw-bg-gradient-to-r tw-from-violet-600 tw-to-fuchsia-600 tw-px-5 tw-py-3.5 tw-text-sm tw-font-semibold tw-text-white tw-shadow-lg tw-transition hover:tw-brightness-110 focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-fuchsia-400/50">
+                            Save song
+                        </button>
+                        <a href="{% url 'core:home' %}" class="tw-inline-flex tw-items-center tw-justify-center tw-rounded-xl tw-border tw-border-white/20 tw-bg-white/[0.04] tw-px-5 tw-py-3.5 tw-text-sm tw-font-semibold tw-text-white/90 tw-transition hover:tw-bg-white/[0.08]">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <p class="tw-mt-8 tw-text-center tw-text-xs tw-text-white/35 tw-font-sans">
+                <a href="{% url 'core:home' %}" class="tw-text-violet-300 hover:tw-underline">← Back to home</a>
+            </p>
+        </div>
+    </div>
+
+    {% include 'includes/footer.html' %}
+</main>
+
+<script>
+(function () {
+  var form = document.getElementById('song-create-form');
+  if (!form) return;
+  form.addEventListener('submit', function (e) {
+    var v = document.getElementById('songFile');
+    var t = document.getElementById('thumbnail');
+    if (v && t && !v.files.length && !t.files.length) {
+      alert('Please upload a video file and/or a thumbnail image.');
+      e.preventDefault();
+    }
+  });
+})();
+</script>
+
+{% endblock %}

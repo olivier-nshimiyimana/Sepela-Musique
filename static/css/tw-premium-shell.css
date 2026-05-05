@@ -1,0 +1,63 @@
+/*
+ * Shared “premium” page shell (home, vote, about).
+ * Mesh uses position: absolute (not fixed) so it never paints over the fixed sidebar.
+ */
+.home-page-premium > .banner.bg-home,
+.vote-page-premium > .banner.bg-song,
+.about-page-premium > .banner.bg-home {
+    display: none !important;
+}
+
+.premium-page {
+    position: relative;
+    isolation: isolate;
+}
+
+.premium-page .premium-mesh {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+    background: #07060b;
+}
+
+.premium-page .premium-mesh::before {
+    content: "";
+    position: absolute;
+    inset: -20%;
+    background:
+        radial-gradient(ellipse 80% 50% at 20% 40%, rgba(124, 58, 237, 0.35), transparent 55%),
+        radial-gradient(ellipse 60% 40% at 80% 20%, rgba(236, 72, 153, 0.22), transparent 50%),
+        radial-gradient(ellipse 50% 60% at 60% 85%, rgba(6, 182, 212, 0.18), transparent 45%);
+    animation: premiumMeshDrift 18s ease-in-out infinite alternate;
+}
+
+.premium-page .premium-mesh::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0.04;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+@keyframes premiumMeshDrift {
+    0% {
+        transform: translate(0, 0) scale(1);
+    }
+    100% {
+        transform: translate(2%, -3%) scale(1.05);
+    }
+}
+
+.premium-page .premium-content {
+    position: relative;
+    z-index: 1;
+}
+
+/* Main column sits beside fixed sidebar; keep stacking sane on desktop */
+@media (min-width: 769px) {
+    body.theme-dark #sidebar {
+        z-index: 1025;
+    }
+}

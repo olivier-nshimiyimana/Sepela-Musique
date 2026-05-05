@@ -1,0 +1,88 @@
+{% load static ui_i18n humanize %}
+{# mode: "dashboard" (hide / reset / unhide + edit votes) | "publish_list" (publish / reject → status) #}
+<article class="yt-track-card tw-group tw-relative tw-min-w-0">
+    <span class="track-vote-pill tw-pointer-events-none tw-absolute tw-right-2 tw-top-2 tw-z-20 tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-lg tw-border tw-border-white/[0.1] tw-px-2 tw-py-1 tw-backdrop-blur-md sm:tw-right-2.5 sm:tw-top-2.5 sm:tw-rounded-xl sm:tw-px-2.5 sm:tw-py-1.5" title="{{ song.votes }} {% ui 'votes_suffix' %}">
+        <span class="tw-flex tw-h-6 tw-w-6 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-md tw-bg-white/[0.08]" aria-hidden="true">
+            <svg class="tw-h-3 tw-w-3 tw-text-emerald-400/85" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </span>
+        <span class="track-vote-count tw-text-lg tw-font-semibold tw-tabular-nums tw-tracking-tight tw-text-white sm:tw-text-xl">{{ song.votes }}</span>
+    </span>
+    <div class="yt-thumb-wrap tw-relative tw-aspect-video tw-overflow-hidden tw-rounded-xl tw-bg-zinc-950 tw-shadow-[0_4px_24px_-8px_rgba(0,0,0,0.75)] tw-ring-1 tw-ring-white/[0.06]">
+        {% if song.song %}
+        <video src="{{ song.song.url }}" poster="{% if song.thumbnail %}{{ song.thumbnail.url }}{% else %}{% static 'images/logos/sepelamusique.png' %}{% endif %}" controls preload="metadata" playsinline class="tw-absolute tw-inset-0 tw-h-full tw-w-full tw-object-cover"></video>
+        {% elif song.thumbnail %}
+        <img src="{{ song.thumbnail.url }}" alt="" class="tw-absolute tw-inset-0 tw-h-full tw-w-full tw-object-cover">
+        {% else %}
+        <div class="tw-flex tw-absolute tw-inset-0 tw-items-center tw-justify-center tw-bg-zinc-900 tw-text-2xl tw-text-white/25" aria-hidden="true">♪</div>
+        {% endif %}
+        {% if not song.song %}
+        <div class="tw-pointer-events-none tw-absolute tw-inset-0 tw-bg-gradient-to-t tw-from-black/55 tw-via-transparent tw-to-transparent"></div>
+        {% endif %}
+    </div>
+
+    <div class="tw-flex tw-gap-3 tw-pt-3 tw-pr-0">
+        {% if song.user.avatar %}
+        <img src="{{ song.user.avatar.url }}" alt="" class="tw-mt-0.5 tw-h-9 tw-w-9 tw-shrink-0 tw-rounded-full tw-object-cover tw-bg-zinc-800 tw-ring-1 tw-ring-white/10" width="36" height="36" loading="lazy" decoding="async">
+        {% else %}
+        <div class="tw-mt-0.5 tw-flex tw-h-9 tw-w-9 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-full tw-bg-gradient-to-br tw-from-violet-600 tw-to-fuchsia-600 tw-text-[13px] tw-font-bold tw-text-white tw-ring-1 tw-ring-white/10" aria-hidden="true">{{ song.user.first_name|default:song.user.email|slice:":1"|upper }}</div>
+        {% endif %}
+
+        <div class="tw-min-w-0 tw-flex-1 tw-text-left tw-font-sans">
+            <h3 class="tw-text-[13px] tw-font-semibold tw-leading-snug tw-text-white tw-line-clamp-2 group-hover:tw-text-violet-200 tw-transition-colors sm:tw-text-sm">{{ song.title }}</h3>
+            <p class="tw-mt-1 tw-text-[12px] tw-leading-snug tw-text-white/55">
+                {% if song.user.first_name or song.user.last_name %}
+                {{ song.user.first_name }}{% if song.user.last_name %} {{ song.user.last_name }}{% endif %}
+                {% else %}
+                {{ song.user.email }}
+                {% endif %}
+            </p>
+            <p class="tw-mt-0.5 tw-text-[11px] tw-leading-snug tw-text-white/40">
+                {{ song.date|naturaltime }}
+                {% if song.status == "0" %} · {% ui 'pending' %}
+                {% elif song.status == "1" %} · {% ui 'accepted' %}
+                {% elif song.status == "2" %} · {% ui 'published' %}
+                {% elif song.status == "4" %} · {% ui 'hidden' %}
+                {% else %} · {% ui 'rejected' %}
+                {% endif %}
+            </p>
+
+            {% if mode == 'dashboard' %}
+            <div class="tw-mt-2 tw-flex tw-flex-wrap tw-gap-2">
+                {% if song.status == "4" %}
+                <form method="post" action="{% url 'core:unhide_song' song.id %}" class="tw-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="dashboard">
+                    <button type="submit" class="tw-rounded-lg tw-border tw-border-emerald-400/40 tw-bg-emerald-500/15 tw-px-3 tw-py-1.5 tw-text-[11px] tw-font-semibold tw-text-emerald-100 hover:tw-bg-emerald-500/25">{% ui 'unhide' %}</button>
+                </form>
+                {% else %}
+                <form method="post" action="{% url 'core:hide_song' song.id %}" class="tw-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="dashboard">
+                    <button type="submit" class="tw-rounded-lg tw-border tw-border-white/18 tw-bg-white/[0.06] tw-px-3 tw-py-1.5 tw-text-[11px] tw-font-semibold tw-text-white/85 hover:tw-bg-white/12">{% ui 'hide' %}</button>
+                </form>
+                {% endif %}
+                <form method="post" action="{% url 'core:reset_song_votes' song.id %}" class="tw-inline" data-confirm-reset="{% filter escapejs %}{% ui 'reset_votes_warning' %}{% endfilter %}" onsubmit="return window.confirm(this.getAttribute('data-confirm-reset'));">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="dashboard">
+                    <input type="hidden" name="confirm_reset" value="yes">
+                    <button type="submit" class="tw-rounded-lg tw-border tw-border-amber-400/45 tw-bg-amber-500/12 tw-px-3 tw-py-1.5 tw-text-[11px] tw-font-semibold tw-text-amber-100 hover:tw-bg-amber-500/22">{% ui 'reset_votes' %}</button>
+                </form>
+                <a href="{% url 'core:admin_song_votes' song.id %}" class="tw-inline-flex tw-items-center tw-rounded-lg tw-border tw-border-violet-400/35 tw-bg-violet-500/10 tw-px-3 tw-py-1.5 tw-text-[11px] tw-font-semibold tw-text-violet-200 hover:tw-bg-violet-500/20">{% ui 'edit_votes' %}</a>
+            </div>
+            {% elif mode == 'publish_list' %}
+            <div class="tw-mt-2 tw-flex tw-flex-wrap tw-gap-2">
+                <form method="post" action="{% url 'core:catalog_publish_song' song.id %}" class="tw-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="tw-rounded-lg tw-border tw-border-emerald-400/40 tw-bg-emerald-500/15 tw-px-3 tw-py-1.5 tw-text-[11px] tw-font-semibold tw-text-emerald-100 hover:tw-bg-emerald-500/25">{% ui 'publish' %}</button>
+                </form>
+                <form method="post" action="{% url 'core:catalog_reject_song' song.id %}" class="tw-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="tw-rounded-lg tw-border tw-border-rose-400/40 tw-bg-rose-500/15 tw-px-3 tw-py-1.5 tw-text-[11px] tw-font-semibold tw-text-rose-100 hover:tw-bg-rose-500/25">{% ui 'reject' %}</button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</article>

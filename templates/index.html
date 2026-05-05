@@ -1,0 +1,52 @@
+ {% extends 'layouts/base2.html' %}
+{% load static %}
+
+{% block content %}
+
+ <!-- Content wrapper -->
+          <div class="content-wrapper">
+            <!-- Content -->
+
+            <div class="container-xxl flex-grow-1 container-p-y" >
+              <!-- Layout Demo -->
+              <div class="layout-demo-wrapper" >
+                <div class="cards" >
+   <div class="row mb-3">
+                  {% for song in songs %}
+    <!-- Cards -->
+ 
+              <div class="col-md-6 col-lg-4 mb-3">
+                  <div class="card h-100">
+                    <div class="card-body" style="background-color: white;">
+                      <h5 class="card-title">{{request.user.first_name}}</h5>
+                      <h6 class="card-subtitle text-muted">{{song.title}}</h6>
+                    </div>
+                     <video src="{{ song.song.url }}" poster="{% if song.thumbnail %}{{ song.thumbnail.url }}{% else %}{% static 'images/logos/sepelamusique.png' %}{% endif %}" controls preload="metadata" playsinline style="width:300px;height:150px;object-fit:cover;display:block;"></video>
+                        <div class="card-body" style="background-color: white;">
+                      <p class="card-text">{{song.description}}</p>
+                      <a href="javascript:void(0);" class="card-link">Vote</a>
+                      
+                    </div>
+                  </div>
+                </div>
+           
+{% endfor %}   </div>
+              <!-- second card -->
+                  <div/> 
+              <!-- End of cards -->
+
+
+             <!-- page footer-->
+
+     
+                
+              </div>
+              <!--/ Layout Demo -->
+            </div>
+            <!-- / Content -->
+</div>
+</div></div></div>
+
+
+
+            {% endblock %}

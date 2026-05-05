@@ -1,0 +1,111 @@
+{% load static ui_i18n %}
+<aside id="sidebar" class="sidebar-primary">
+    <div class="sidebar-header d-flex align-items-center">
+        <a href="/" class="brand">
+            <img src="{% static 'images/logos/sepelamusique.png' %}" alt="listen-app" >
+        </a>
+        <button type="button" class="btn p-0 ml-auto" id="hideSidebar">
+            <i class="ion-md-arrow-back h3"></i>
+        </button>
+        <button type="button" class="btn toggle-menu" id="toggleSidebar">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </div>
+    <nav class="navbar">
+
+        <ul class="navbar-nav" data-scrollable="true">
+            <span ><li class="nav-item nav-header" style="background-color:grey;">Sepela Musique</li></span>
+            <a href="/" class="brand">
+            
+         </a>
+            
+            {% if request.user.is_authenticated %}  
+            {% endif %}
+            {% if request.user.is_authenticated and request.user.user_type != 1 %}
+            <li class="nav-item">
+                <a href="{% url 'core:artist_promo' %}" class="nav-link">
+                    <i class="la la-image"></i>
+                    <span>{% ui 'promo_media' %}</span>
+                </a>
+            </li>
+            {% endif %}
+            {% if not request.user.is_authenticated or request.user.is_authenticated  %}  
+           
+            <li class="nav-item">
+                <a href="/" class="nav-link">
+                    <i class="la la-home"></i>
+                    <span>{% ui 'home' %}</span>
+                </a>
+            </li>
+            {% if not user.is_authenticated or user.user_type != 1 %}
+            <li class="nav-item">
+                <a href="{% url 'core:about' %}" class="nav-link">
+                    <i class="la la-history"></i>
+                    <span>{% ui 'about_us' %}</span>
+                </a>
+            </li>
+            {% endif %}
+            
+            {% endif %}
+           
+
+            {% if user.user_type == 1 %}
+            <li class="nav-item">
+                <a href="{% url 'core:app_administration' %}" class="nav-link">
+                    <i class="la la-cogs"></i>
+                    <span>{% ui 'administration' %}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'core:song_view' %}" class="nav-link">
+                    <i class="la la-heart-o"></i>
+                    <span>{% ui 'publish_song' %}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'accounts:list_of_artist' %}" class="nav-link">
+                    <i class="la la-microphone"></i>
+                    <span>{% ui 'artist_list' %}</span>
+                </a>
+            </li>
+           {% endif %}
+               
+        </ul>
+    </nav>
+</aside>
+<script>
+  (function () {
+    function markActiveSidebarLink() {
+      var path = window.location.pathname || "/";
+      document.querySelectorAll("#sidebar .nav-link").forEach(function (a) {
+        var href = a.getAttribute("href");
+        if (!href) return;
+        var active = href === "/" ? path === "/" : path.indexOf(href) === 0;
+        a.classList.toggle("active", active);
+      });
+    }
+
+    // Capture-phase pointer handler: wins over bubbling blockers.
+    document.addEventListener(
+      "pointerup",
+      function (e) {
+        var link = e.target && e.target.closest ? e.target.closest("#sidebar .nav-link") : null;
+        if (!link) return;
+        var href = link.getAttribute("href");
+        if (!href || href === "#") return;
+        e.preventDefault();
+        e.stopPropagation();
+        window.location.assign(href);
+      },
+      true
+    );
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", markActiveSidebarLink);
+    } else {
+      markActiveSidebarLink();
+    }
+  })();
+</script>

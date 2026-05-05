@@ -1,0 +1,64 @@
+{% extends 'layouts/base.html' %}
+{% load static ui_i18n %}
+
+{% block stylesheets %}
+{% include 'includes/tw_theme_setup.html' %}
+{% endblock %}
+
+{% block content %}
+<main id="pageWrapper" class="home-page-premium tw-min-h-screen tw-bg-[#07060b]">
+    <div class="premium-page tw-relative tw-min-h-screen tw-pb-16">
+        <div class="premium-mesh" aria-hidden="true"></div>
+        <div class="premium-content tw-max-w-3xl tw-mx-auto tw-px-4 sm:tw-px-6 lg:tw-px-8 tw-pt-8 md:tw-pt-10">
+            <p class="tw-mb-4"><a href="{% url 'core:app_administration' %}" class="tw-text-sm tw-font-semibold tw-text-violet-300 hover:tw-text-violet-200">← {% ui 'administration' %}</a></p>
+            <header class="tw-mb-8">
+                <h1 class="tw-font-display tw-text-2xl tw-font-bold tw-text-white tw-mb-2">{% ui 'edit_votes' %}</h1>
+                <p class="tw-text-white/55 tw-font-sans tw-text-sm">{% ui 'songs' %}: <span class="tw-text-white/90 tw-font-semibold">{{ song.title }}</span></p>
+                <p class="tw-mt-2 tw-text-xs tw-text-white/40 tw-font-sans">You can correct voter emails or remove votes. Song title and media are not editable here.</p>
+            </header>
+
+            <section class="tw-mb-6 tw-rounded-2xl tw-border tw-border-white/[0.08] tw-bg-white/[0.03] tw-p-4 tw-font-sans">
+                <h2 class="tw-text-sm tw-font-semibold tw-text-white tw-mb-2">{% ui 'votes_suffix' %} +</h2>
+                <form method="post" action="{% url 'core:admin_song_votes' song.id %}" class="tw-flex tw-flex-col sm:tw-flex-row tw-gap-3 sm:tw-items-end">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="add_votes">
+                    <div>
+                        <label class="tw-block tw-text-xs tw-font-semibold tw-tracking-wide tw-text-white/50 tw-mb-1.5 tw-uppercase">Amount</label>
+                        <input type="number" min="1" step="1" name="vote_amount" value="1" required class="tw-w-36 tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white">
+                    </div>
+                    <button type="submit" class="tw-rounded-xl tw-bg-gradient-to-r tw-from-violet-600 tw-to-fuchsia-600 tw-px-4 tw-py-2.5 tw-text-sm tw-font-semibold tw-text-white">{% ui 'votes_suffix' %} +</button>
+                </form>
+                <p class="tw-mt-2 tw-text-xs tw-text-white/40">Bulk votes are created with admin-generated placeholder emails and can be edited below.</p>
+            </section>
+
+            {% if votes %}
+            <ul class="tw-space-y-4 tw-font-sans">
+                {% for vote in votes %}
+                <li class="tw-rounded-2xl tw-border tw-border-white/[0.08] tw-bg-white/[0.03] tw-p-4">
+                    <form method="post" action="{% url 'core:admin_song_votes' song.id %}" class="tw-flex tw-flex-col sm:tw-flex-row tw-gap-3 tw-items-start sm:tw-items-end">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="update_vote">
+                        <input type="hidden" name="vote_id" value="{{ vote.id }}">
+                        <div class="tw-flex-1 tw-w-full">
+                            <label class="tw-block tw-text-xs tw-font-semibold tw-tracking-wide tw-text-white/50 tw-mb-1.5 tw-uppercase">{% ui 'voter_email' %}</label>
+                            <input type="email" name="voter_email" value="{{ vote.voter_Email }}" required class="tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white">
+                        </div>
+                        <button type="submit" class="tw-shrink-0 tw-rounded-xl tw-bg-gradient-to-r tw-from-violet-600 tw-to-fuchsia-600 tw-px-4 tw-py-2.5 tw-text-sm tw-font-semibold tw-text-white">{% ui 'save_settings' %}</button>
+                    </form>
+                    <form method="post" action="{% url 'core:admin_song_votes' song.id %}" class="tw-mt-3" onsubmit="return confirm('Remove this vote permanently?');">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="delete_vote">
+                        <input type="hidden" name="vote_id" value="{{ vote.id }}">
+                        <button type="submit" class="tw-text-xs tw-font-semibold tw-text-rose-300 hover:tw-text-rose-200">{% ui 'delete' %}</button>
+                    </form>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="tw-text-white/45 tw-font-sans tw-rounded-2xl tw-border tw-border-dashed tw-border-white/15 tw-p-8 tw-text-center">{% ui 'no_votes_yet' %}</p>
+            {% endif %}
+        </div>
+    </div>
+    {% include 'includes/footer.html' %}
+</main>
+{% endblock %}
