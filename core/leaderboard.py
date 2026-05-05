@@ -1,6 +1,7 @@
 from collections import defaultdict
 
 from django.db.models import Count
+from django.db.utils import OperationalError, ProgrammingError
 
 from accounts.models import User
 
@@ -12,8 +13,12 @@ def top_artists_by_votes(limit=10, published_status='2'):
     Rank artists by total confirmed votes on published songs.
     Vote.songs stores song id as text; only votes tied to published songs count.
     """
-    rows = Vote.objects.values('songs').annotate(votes=Count('id'))
-    song_votes = {str(r['songs']): r['votes'] for r in rows}
+    try:
+        rows = Vote.objects.values('songs').annotate(votes=Count('id'))
+        song_votes = {str(r['songs']): r['votes'] for r in rows}
+    except (OperationalError, ProgrammingError):
+        # On first deploy (before migrations), avoid crashing homepage health checks.
+        return []
 
     artist_totals = defaultdict(int)
     for song in Song.objects.filter(status=published_status).only('id', 'user_id'):
