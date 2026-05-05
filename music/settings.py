@@ -14,7 +14,10 @@ import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 from datetime import timedelta
-import dj_database_url
+try:
+    import dj_database_url
+except ModuleNotFoundError:
+    dj_database_url = None
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -149,13 +152,21 @@ WSGI_APPLICATION = 'music.wsgi.application'
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
 _database_url = os.environ.get('DATABASE_URL', '').strip()
-if _database_url:
+if _database_url and dj_database_url is not None:
     DATABASES = {
         'default': dj_database_url.parse(
             _database_url,
             conn_max_age=int(os.environ.get('DB_CONN_MAX_AGE', '600')),
             ssl_require=not DEBUG,
         )
+    }
+elif _database_url and dj_database_url is None:
+    # Fail-safe fallback if dependency is missing in an old deployment commit.
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        }
     }
 else:
     DATABASES = {
