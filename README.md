@@ -115,6 +115,14 @@ gunicorn music.wsgi:application
 - `SECURE_HSTS_PRELOAD=true`
 - `USE_X_FORWARDED_PROTO=true`
 
+Optional (no shell access admin bootstrap):
+
+- `DJANGO_CREATE_SUPERUSER=true`
+- `DJANGO_SUPERUSER_EMAIL=<admin-email>`
+- `DJANGO_SUPERUSER_PASSWORD=<strong-password>`
+- `DJANGO_SUPERUSER_FIRST_NAME=Admin`
+- `DJANGO_SUPERUSER_LAST_NAME=User`
+
 ## Static / Favicon Notes
 
 - `STATIC_ROOT` is configured as `staticfiles` for `collectstatic`.
