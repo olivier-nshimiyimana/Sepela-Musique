@@ -62,7 +62,16 @@
                        role="button" id="userMenu" data-toggle="dropdown"
                        aria-haspopup="true" aria-expanded="false">
                         <div class="avatar avatar-sm avatar-circle">
-                            <img src="{% static 'images/logos/sepelamusique.png' %}" alt="user">
+                            {% if request.user.avatar %}
+                            <img src="{{ request.user.avatar.url }}" alt="{% ui 'profile' %}">
+                            {% else %}
+                            <span class="d-flex align-items-center justify-content-center w-100 h-100">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="2.4"/>
+                                    <path d="M5 19C5.9 15.9 8.6 14 12 14C15.4 14 18.1 15.9 19 19" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+                                </svg>
+                            </span>
+                            {% endif %}
                         </div>
                         <span class="pl-2">{% ui 'hello' %} {{ request.user.first_name }}</span>
                     </a>
@@ -88,7 +97,12 @@
                 <li>
                     <a href="javascript:void(0);" data-toggle="modal" data-target="#login" class="d-flex align-items-center py-2" title="{% ui 'login_signup' %}">
                         <div class="avatar avatar-sm avatar-circle">
-                            <img src="{% static 'images/logos/sepelamusique.png' %}" alt="{% ui 'login_signup' %}">
+                            <span class="d-flex align-items-center justify-content-center w-100 h-100">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="2.4"/>
+                                    <path d="M5 19C5.9 15.9 8.6 14 12 14C15.4 14 18.1 15.9 19 19" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+                                </svg>
+                            </span>
                         </div>
                     </a>
                 </li>

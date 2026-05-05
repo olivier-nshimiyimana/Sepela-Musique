@@ -261,7 +261,9 @@ else:
 EMAIL_HOST = os.environ.get('EMAIL_HOST', '')
 EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+# Gmail App Passwords are often copied with spaces (e.g. "abcd efgh ijkl mnop").
+# Normalize by removing all whitespace to avoid silent auth failures.
+EMAIL_HOST_PASSWORD = ''.join(os.environ.get('EMAIL_HOST_PASSWORD', '').split())
 EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'true').lower() in ('1', 'true', 'yes')
 EMAIL_TIMEOUT = int(os.environ.get('EMAIL_TIMEOUT', '20'))
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@localhost')

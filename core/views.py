@@ -1,4 +1,5 @@
 import uuid
+import logging
 
 from django.conf import settings
 from django.contrib import messages
@@ -14,6 +15,8 @@ from .forms import HelpForm
 from .leaderboard import top_artists_by_votes
 from .models import Contact, SiteSettings, Song, Token, Vote
 from .video_thumbnails import ensure_song_thumbnail_from_video
+
+logger = logging.getLogger(__name__)
 
 
 def _song_vote_count(song_id):
@@ -601,6 +604,7 @@ def vote(request):
         send_mail(subject, text, from_email, [email], fail_silently=False)
         messages.success(request, 'Check the email to confirm your vote.')
     except Exception:
+        logger.exception("Vote confirmation email send failed")
         messages.error(
             request,
             'Could not send confirmation email. Check EMAIL_* settings and try again.',
