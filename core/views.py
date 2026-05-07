@@ -295,6 +295,35 @@ def app_administration(request):
 
 
 @login_required
+def send_test_email(request):
+    if request.user.user_type != 1:
+        messages.error(request, 'Only administration users can access this page.')
+        return redirect(reverse('core:home'))
+
+    recipient = (request.POST.get('email') or request.GET.get('email') or request.user.email or '').strip()
+    if not recipient:
+        messages.error(request, 'Provide an email address using ?email=you@example.com.')
+        return redirect(reverse('core:app_administration'))
+
+    site = SiteSettings.get_solo()
+    subject = '[%s] Brevo test email' % site.site_title
+    body = (
+        'Hello,\n\n'
+        'This is a test email from Sepela Musique.\n'
+        'If you received this, email delivery is working.\n'
+    )
+    from_email = site.vote_from_email or getattr(settings, 'DEFAULT_FROM_EMAIL', None)
+
+    try:
+        send_mail(subject, body, from_email, [recipient], fail_silently=False)
+        messages.success(request, 'Test email sent to %s.' % recipient)
+    except Exception:
+        logger.exception('Test email send failed')
+        messages.error(request, 'Test email failed. Check server logs for Brevo error details.')
+    return redirect(reverse('core:app_administration'))
+
+
+@login_required
 def admin_song_votes(request, id):
     if request.user.user_type != 1:
         messages.error(request, 'Only administration users can access this page.')
@@ -599,9 +628,27 @@ def vote(request):
         "{}\n\n"
         "If you did not request this vote, you can ignore this email."
     ).format(vote_link)
+    html_message = (
+        "<p>Hello,</p>"
+        "<p>You requested to vote on Sepela Musique.</p>"
+        "<p>Please confirm your vote by clicking the button below:</p>"
+        "<p><a href=\"{link}\" "
+        "style=\"display:inline-block;padding:10px 16px;background:#2b6cb0;color:#ffffff;"
+        "text-decoration:none;border-radius:6px;\">Confirm vote</a></p>"
+        "<p>If the button does not work, use this link:</p>"
+        "<p><a href=\"{link}\">{link}</a></p>"
+        "<p>If you did not request this vote, you can ignore this email.</p>"
+    ).format(link=vote_link)
     from_email = site.vote_from_email or getattr(settings, 'DEFAULT_FROM_EMAIL', None)
     try:
-        send_mail(subject, text, from_email, [email], fail_silently=False)
+        send_mail(
+            subject,
+            text,
+            from_email,
+            [email],
+            fail_silently=False,
+            html_message=html_message,
+        )
         messages.success(request, 'Check the email to confirm your vote.')
     except Exception:
         logger.exception("Vote confirmation email send failed")

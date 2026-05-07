@@ -10,6 +10,7 @@ app_name = "core"
 urlpatterns = [
     path("", home, name="home"),
     path("administration", app_administration, name="app_administration"),
+    path("administration/test-email", send_test_email, name="send_test_email"),
     path("administration/song/<int:id>/votes", admin_song_votes, name="admin_song_votes"),
     path('upload', songUpload, name='upload'),
     path('artist/promo', artist_promo, name='artist_promo'),

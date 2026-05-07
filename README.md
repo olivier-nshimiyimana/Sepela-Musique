@@ -70,12 +70,26 @@ Security / HTTPS:
 Email:
 
 - `DJANGO_EMAIL_BACKEND`
+- `BREVO_API_KEY`
 - `EMAIL_HOST`
 - `EMAIL_PORT`
 - `EMAIL_HOST_USER`
 - `EMAIL_HOST_PASSWORD`
 - `EMAIL_USE_TLS`
 - `DEFAULT_FROM_EMAIL`
+
+Brevo API (recommended):
+
+- `BREVO_API_KEY=<your-brevo-api-key>`
+- Leave `DJANGO_EMAIL_BACKEND` unset to auto-use Brevo API backend.
+
+Brevo SMTP fallback:
+
+- `EMAIL_HOST=smtp-relay.brevo.com`
+- `EMAIL_PORT=587`
+- `EMAIL_HOST_USER=<your-brevo-login>`
+- `EMAIL_HOST_PASSWORD=<your-brevo-smtp-key>`
+- `EMAIL_USE_TLS=true`
 
 ## Moderation Statuses
 

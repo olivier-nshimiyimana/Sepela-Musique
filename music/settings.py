@@ -250,21 +250,23 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
 }
-_email_backend_env = os.environ.get(
-    'DJANGO_EMAIL_BACKEND',
-    'django.core.mail.backends.console.EmailBackend',
+_default_email_backend = (
+    'core.email_backends.BrevoApiEmailBackend'
+    if os.environ.get('BREVO_API_KEY', '').strip()
+    else 'django.core.mail.backends.smtp.EmailBackend'
 )
+_email_backend_env = os.environ.get('DJANGO_EMAIL_BACKEND', _default_email_backend)
 if _email_backend_env == 'django.core.mail.backends.smtp.EmailBackend':
     EMAIL_BACKEND = 'core.email_backends.CompatEmailBackend'
 else:
     EMAIL_BACKEND = _email_backend_env
-EMAIL_HOST = os.environ.get('EMAIL_HOST', '')
+BREVO_API_KEY = ''.join(os.environ.get('BREVO_API_KEY', '').split())
+EMAIL_HOST = os.environ.get('EMAIL_HOST', os.environ.get('BREVO_SMTP_SERVER', 'smtp-relay.brevo.com'))
 EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
-# Gmail App Passwords are often copied with spaces (e.g. "abcd efgh ijkl mnop").
-# Normalize by removing all whitespace to avoid silent auth failures.
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', os.environ.get('BREVO_SMTP_LOGIN', ''))
+# Normalize copied credentials that may include accidental spaces.
 EMAIL_HOST_PASSWORD = ''.join(os.environ.get('EMAIL_HOST_PASSWORD', '').split())
 EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'true').lower() in ('1', 'true', 'yes')
 EMAIL_TIMEOUT = int(os.environ.get('EMAIL_TIMEOUT', '20'))
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@localhost')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER or 'noreply@localhost')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
