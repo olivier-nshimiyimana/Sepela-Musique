@@ -18,6 +18,8 @@ class Song(models.Model):
     description = models.TextField()
     song = models.FileField(upload_to=song_directory_path, max_length=500, blank=True, null=True)
     thumbnail = models.ImageField(upload_to='songs/thumbnails/', max_length=500, blank=True, null=True)
+    fallback_song_data_url = models.TextField(blank=True, null=True)
+    fallback_thumbnail_data_url = models.TextField(blank=True, null=True)
     # vote = models.IntegerField(default=0)
     date = models.DateTimeField(auto_now_add=True)
     status = models.TextField(default=0)
@@ -28,7 +30,29 @@ class Song(models.Model):
 
     @property
     def has_vote_media(self):
-        return bool(self.song or self.thumbnail)
+        return bool(self.song_display_url or self.thumbnail_display_url)
+
+    @property
+    def song_display_url(self):
+        if self.fallback_song_data_url:
+            return self.fallback_song_data_url
+        if self.song:
+            try:
+                return self.song.url
+            except ValueError:
+                return ''
+        return ''
+
+    @property
+    def thumbnail_display_url(self):
+        if self.fallback_thumbnail_data_url:
+            return self.fallback_thumbnail_data_url
+        if self.thumbnail:
+            try:
+                return self.thumbnail.url
+            except ValueError:
+                return ''
+        return ''
     
 
 class Vote(models.Model):

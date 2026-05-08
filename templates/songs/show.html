@@ -9,7 +9,7 @@
         <div class="main-container">
             <div class="row section text-center text-md-left">
                 <div class="col-xl-3 col-lg-4 col-sm-5">
-                    <img src="{{ song.thumbnail.url }}" alt="" class="card-img--radius-lg">
+                    <img src="{{ song.thumbnail_display_url }}" alt="" class="card-img--radius-lg">
                 </div>
                 <div class="col-xl-9 col-lg-8 col-sm-7">
                     <div class="row pt-4">
@@ -32,7 +32,7 @@
                                 <a href="javascript:void(0);"
                                    class="btn btn-pill btn-air btn-bold btn-danger"
                                    id="play-pause"
-                                   data-audio='{"name": "{{ song.title }}", "artist": "{{ song.artists.0.name }}", "album": "", "url": "{{ song.song.url }}", "cover_art_url": "{{ song.thumbnail.url }}"}'>
+                                   data-audio='{"name": "{{ song.title }}", "artist": "{{ song.artists.0.name }}", "album": "", "url": "{{ song.song_display_url }}", "cover_art_url": "{{ song.thumbnail_display_url }}"}'>
                                     Play
                                 </a>
                             </div>
@@ -133,8 +133,8 @@
                 name: "{{ song.title }}",
                 artist: "Arebica Luna",
                 album: "Mummy",
-                url: "{{ song.song.url }}",
-                cover_art_url: "{{ song.thumbnail.url }}"
+                url: "{{ song.song_display_url }}",
+                cover_art_url: "{{ song.thumbnail_display_url }}"
             }],
             "bindings": {
                 32: 'play_pause'
@@ -206,7 +206,7 @@
         wavesurfer.on('seek', function (seeks) {
         });
 
-        wavesurfer.load('{{ song.song.url }}');
+        wavesurfer.load('{{ song.song_display_url }}');
 
         $('.amplitude-play-pause').on('click', function () {
             if ($(this).hasClass('amplitude-playing')) {

@@ -1,5 +1,6 @@
 import uuid
 import logging
+import base64
 
 from django.conf import settings
 from django.contrib import messages
@@ -17,6 +18,18 @@ from .models import Contact, SiteSettings, Song, Token, Vote
 from .video_thumbnails import ensure_song_thumbnail_from_video
 
 logger = logging.getLogger(__name__)
+
+
+def _file_to_data_url(uploaded_file, fallback_mime):
+    if not uploaded_file:
+        return None
+    raw = uploaded_file.read()
+    uploaded_file.seek(0)
+    if not raw:
+        return None
+    mime_type = getattr(uploaded_file, 'content_type', None) or fallback_mime
+    encoded = base64.b64encode(raw).decode('ascii')
+    return 'data:%s;base64,%s' % (mime_type, encoded)
 
 
 def _song_vote_count(song_id):
@@ -51,7 +64,12 @@ def home(request):
 
         songs = (
             Song.objects.filter(status=2)
-            .filter(Q(song__isnull=False) | Q(thumbnail__isnull=False))
+            .filter(
+                Q(song__isnull=False)
+                | Q(thumbnail__isnull=False)
+                | Q(fallback_song_data_url__isnull=False)
+                | Q(fallback_thumbnail_data_url__isnull=False)
+            )
             .select_related('user')
         )
 
@@ -471,6 +489,8 @@ def songUpload(request):
             description=description,
             song=song_file,
             thumbnail=thumbnail,
+            fallback_song_data_url=_file_to_data_url(song_file, 'video/mp4'),
+            fallback_thumbnail_data_url=_file_to_data_url(thumbnail, 'image/jpeg'),
         )
 
         song.save()
@@ -516,8 +536,10 @@ def updaterecord(request, id):
     song.description = description
     if song_file:
         song.song = song_file
+        song.fallback_song_data_url = _file_to_data_url(song_file, 'video/mp4')
     if thumbnail:
         song.thumbnail = thumbnail
+        song.fallback_thumbnail_data_url = _file_to_data_url(thumbnail, 'image/jpeg')
     song.save()
     if song.song and not song.thumbnail:
         ensure_song_thumbnail_from_video(song)

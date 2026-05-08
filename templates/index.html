@@ -21,7 +21,7 @@
                       <h5 class="card-title">{{request.user.first_name}}</h5>
                       <h6 class="card-subtitle text-muted">{{song.title}}</h6>
                     </div>
-                     <video src="{{ song.song.url }}" poster="{% if song.thumbnail %}{{ song.thumbnail.url }}{% else %}{% static 'images/logos/sepelamusique.png' %}{% endif %}" controls preload="metadata" playsinline style="width:300px;height:150px;object-fit:cover;display:block;"></video>
+                     <video src="{{ song.song_display_url }}" poster="{% if song.thumbnail_display_url %}{{ song.thumbnail_display_url }}{% else %}{% static 'images/logos/sepelamusique.png' %}{% endif %}" controls preload="metadata" playsinline style="width:300px;height:150px;object-fit:cover;display:block;"></video>
                         <div class="card-body" style="background-color: white;">
                       <p class="card-text">{{song.description}}</p>
                       <a href="javascript:void(0);" class="card-link">Vote</a>
