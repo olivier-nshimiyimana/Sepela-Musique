@@ -3,6 +3,11 @@
 
 {% block stylesheets %}
 {% include 'includes/tw_theme_setup.html' %}
+<style>
+.admin-dash-disclosure > summary { list-style: none; }
+.admin-dash-disclosure > summary::-webkit-details-marker { display: none; }
+.admin-dash-disclosure[open] .admin-dash-disclosure-chevron { transform: rotate(180deg); }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -45,56 +50,66 @@
                 </form>
             </section>
 
-            <section class="tw-rounded-3xl tw-border tw-border-white/[0.08] tw-bg-white/[0.03] tw-backdrop-blur-md tw-p-5 sm:tw-p-6 tw-mb-8">
-                <h2 class="tw-font-display tw-text-xl tw-font-semibold tw-text-white tw-mb-4">{% ui 'site_settings' %}</h2>
-                <form method="post" action="{% url 'core:app_administration' %}" class="tw-font-sans sf-submit-state" data-sf-busy-label="{% filter escapejs %}{% ui 'form_processing' %}{% endfilter %}">
-                    {% csrf_token %}
-                    <input type="hidden" name="action" value="save_site_settings">
-                    <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-4">
-                        <input type="text" name="site_title" value="{{ site_settings.site_title }}" required class="tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white" placeholder="Site title">
-                        <input type="email" name="contact_email" value="{{ site_settings.contact_email }}" required class="tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white" placeholder="Contact email">
-                        <input type="text" name="contact_phone" value="{{ site_settings.contact_phone }}" class="tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white" placeholder="Contact phone">
-                        <input type="text" name="whatsapp_payments_phone" value="{{ site_settings.whatsapp_payments_phone }}" class="tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white" placeholder="+243… — WhatsApp (payment screenshots)" aria-describedby="whatsapp-payments-help">
-                        <input type="email" name="vote_from_email" value="{{ site_settings.vote_from_email }}" required class="tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white" placeholder="Vote from email">
-                        <input type="text" name="payment_registered_name" value="{{ site_settings.payment_registered_name }}" class="tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white" placeholder="Registered name (mobile money)" aria-describedby="mobile-money-help">
-                        <input type="text" name="airtel_money_number" value="{{ site_settings.airtel_money_number }}" class="tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white" placeholder="Airtel Money number">
-                        <input type="text" name="afrimoney_number" value="{{ site_settings.afrimoney_number }}" class="tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white" placeholder="Afrimoney number">
-                        <input type="text" name="mpesa_number" value="{{ site_settings.mpesa_number }}" class="tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white" placeholder="M-Pesa number">
-                        <textarea rows="3" name="contact_address" class="md:tw-col-span-2 tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white" placeholder="Contact address">{{ site_settings.contact_address }}</textarea>
-                        <textarea rows="3" name="payment_instructions_note" class="md:tw-col-span-2 tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white" placeholder="Extra payment notes for buyers (optional)">{{ site_settings.payment_instructions_note }}</textarea>
-                        <p id="whatsapp-payments-help" class="md:tw-col-span-2 tw-text-xs tw-text-white/45 tw-font-sans"><strong class="tw-text-white/65">WhatsApp (vote checkout):</strong> only this number is used for <code class="tw-text-white/70">wa.me</code> links. It is <strong class="tw-text-white/65">not</strong> taken from the public contact phone — set it here (e.g. +243 986 764 403).</p>
-                        <p id="mobile-money-help" class="md:tw-col-span-2 tw-text-xs tw-text-white/45 tw-font-sans"><strong class="tw-text-white/65">Mobile money:</strong> shown after checkout so buyers know amount + numbers + registered name. Add vote packages below.</p>
-                    </div>
-                    <button type="submit" class="tw-mt-4 tw-inline-flex tw-items-center tw-rounded-xl tw-bg-gradient-to-r tw-from-violet-600 tw-to-fuchsia-600 tw-px-5 tw-py-2.5 tw-text-sm tw-font-semibold tw-text-white">{% ui 'save_settings' %}</button>
-                </form>
-            </section>
+            <details class="admin-dash-disclosure tw-rounded-3xl tw-border tw-border-white/[0.08] tw-bg-white/[0.03] tw-backdrop-blur-md tw-p-5 sm:tw-p-6 tw-mb-8 tw-font-sans">
+                <summary class="tw-flex tw-cursor-pointer tw-list-none tw-items-center tw-justify-between tw-gap-3 tw-rounded-xl tw-px-1 tw-py-1 tw-outline-none hover:tw-bg-white/[0.05] focus-visible:tw-ring-2 focus-visible:tw-ring-violet-500/45">
+                    <h2 class="tw-font-display tw-text-xl tw-font-semibold tw-text-white tw-mb-0">{% ui 'site_settings' %}</h2>
+                    <svg class="admin-dash-disclosure-chevron tw-h-5 tw-w-5 tw-shrink-0 tw-text-white/55 tw-transition-transform tw-duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                </summary>
+                <div class="tw-mt-4">
+                    <form method="post" action="{% url 'core:app_administration' %}" class="tw-font-sans sf-submit-state" data-sf-busy-label="{% filter escapejs %}{% ui 'form_processing' %}{% endfilter %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="save_site_settings">
+                        <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-4">
+                            <input type="text" name="site_title" value="{{ site_settings.site_title }}" required class="tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white" placeholder="Site title">
+                            <input type="email" name="contact_email" value="{{ site_settings.contact_email }}" required class="tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white" placeholder="Contact email">
+                            <input type="text" name="contact_phone" value="{{ site_settings.contact_phone }}" class="tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white" placeholder="Contact phone">
+                            <input type="text" name="whatsapp_payments_phone" value="{{ site_settings.whatsapp_payments_phone }}" class="tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white" placeholder="+243… — WhatsApp (payment screenshots)" aria-describedby="whatsapp-payments-help">
+                            <input type="email" name="vote_from_email" value="{{ site_settings.vote_from_email }}" required class="tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white" placeholder="Vote from email">
+                            <input type="text" name="payment_registered_name" value="{{ site_settings.payment_registered_name }}" class="tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white" placeholder="Registered name (mobile money)" aria-describedby="mobile-money-help">
+                            <input type="text" name="airtel_money_number" value="{{ site_settings.airtel_money_number }}" class="tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white" placeholder="Airtel Money number">
+                            <input type="text" name="afrimoney_number" value="{{ site_settings.afrimoney_number }}" class="tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white" placeholder="Afrimoney number">
+                            <input type="text" name="mpesa_number" value="{{ site_settings.mpesa_number }}" class="tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white" placeholder="M-Pesa number">
+                            <textarea rows="3" name="contact_address" class="md:tw-col-span-2 tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white" placeholder="Contact address">{{ site_settings.contact_address }}</textarea>
+                            <textarea rows="3" name="payment_instructions_note" class="md:tw-col-span-2 tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white" placeholder="Extra payment notes for buyers (optional)">{{ site_settings.payment_instructions_note }}</textarea>
+                            <p id="whatsapp-payments-help" class="md:tw-col-span-2 tw-text-xs tw-text-white/45 tw-font-sans"><strong class="tw-text-white/65">WhatsApp (vote checkout):</strong> only this number is used for <code class="tw-text-white/70">wa.me</code> links. It is <strong class="tw-text-white/65">not</strong> taken from the public contact phone — set it here (e.g. +243 986 764 403).</p>
+                            <p id="mobile-money-help" class="md:tw-col-span-2 tw-text-xs tw-text-white/45 tw-font-sans"><strong class="tw-text-white/65">Mobile money:</strong> shown after checkout so buyers know amount + numbers + registered name. Add vote packages below.</p>
+                        </div>
+                        <button type="submit" class="tw-mt-4 tw-inline-flex tw-items-center tw-rounded-xl tw-bg-gradient-to-r tw-from-violet-600 tw-to-fuchsia-600 tw-px-5 tw-py-2.5 tw-text-sm tw-font-semibold tw-text-white">{% ui 'save_settings' %}</button>
+                    </form>
+                </div>
+            </details>
 
             {% include 'includes/admin_vote_packages_panel.html' %}
 
             {% include 'includes/admin_vote_requests_panel.html' %}
 
-            <section class="tw-mb-8 tw-font-sans">
-                <div class="tw-flex tw-flex-wrap tw-items-end tw-justify-between tw-gap-4 tw-mb-5">
-                    <div>
-                        <h2 class="tw-font-display tw-text-xl tw-font-semibold tw-text-white tw-tracking-tight">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_recent_songs_moderation' %}{% else %}{% ui 'recent_songs_moderation' %}{% endif %}</h2>
+            <details class="admin-dash-disclosure tw-rounded-3xl tw-border tw-border-white/[0.08] tw-bg-white/[0.03] tw-backdrop-blur-md tw-p-5 sm:tw-p-6 tw-mb-8 tw-font-sans">
+                <summary class="tw-flex tw-cursor-pointer tw-list-none tw-items-center tw-justify-between tw-gap-3 tw-rounded-xl tw-px-1 tw-py-1 tw-outline-none hover:tw-bg-white/[0.05] focus-visible:tw-ring-2 focus-visible:tw-ring-violet-500/45">
+                    <h2 class="tw-font-display tw-text-xl tw-font-semibold tw-text-white tw-tracking-tight tw-mb-0">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_recent_songs_moderation' %}{% else %}{% ui 'recent_songs_moderation' %}{% endif %}</h2>
+                    <svg class="admin-dash-disclosure-chevron tw-h-5 tw-w-5 tw-shrink-0 tw-text-white/55 tw-transition-transform tw-duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                </summary>
+                <div class="tw-mt-4">
+                    {% if recent_songs %}
+                    <div class="yt-track-grid tw-w-full">
+                        {% for song in recent_songs %}
+                            {% include 'includes/admin_yt_song_card.html' with song=song mode='dashboard' %}
+                        {% endfor %}
                     </div>
+                    {% else %}
+                    <div class="tw-rounded-2xl tw-border tw-border-dashed tw-border-white/15 tw-bg-white/[0.02] tw-py-14 tw-px-6 tw-text-center">
+                        <p class="tw-text-sm tw-text-white/45">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_no_songs_found' %}{% else %}{% ui 'no_songs_found' %}{% endif %}</p>
+                    </div>
+                    {% endif %}
                 </div>
-                {% if recent_songs %}
-                <div class="yt-track-grid tw-w-full">
-                    {% for song in recent_songs %}
-                        {% include 'includes/admin_yt_song_card.html' with song=song mode='dashboard' %}
-                    {% endfor %}
-                </div>
-                {% else %}
-                <div class="tw-rounded-2xl tw-border tw-border-dashed tw-border-white/15 tw-bg-white/[0.02] tw-py-14 tw-px-6 tw-text-center">
-                    <p class="tw-text-sm tw-text-white/45">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_no_songs_found' %}{% else %}{% ui 'no_songs_found' %}{% endif %}</p>
-                </div>
-                {% endif %}
-            </section>
+            </details>
 
             <div class="tw-grid tw-grid-cols-1 lg:tw-grid-cols-2 tw-gap-6 tw-pb-4">
-                <section class="tw-rounded-3xl tw-border tw-border-white/[0.08] tw-bg-white/[0.03] tw-backdrop-blur-md tw-p-5 sm:tw-p-6">
-                    <h2 class="tw-font-display tw-text-lg tw-font-semibold tw-text-white tw-mb-4">{% ui 'recent_votes' %}</h2>
+                <details class="admin-dash-disclosure tw-rounded-3xl tw-border tw-border-white/[0.08] tw-bg-white/[0.03] tw-backdrop-blur-md tw-p-5 sm:tw-p-6">
+                    <summary class="tw-flex tw-cursor-pointer tw-list-none tw-items-center tw-justify-between tw-gap-3 tw-rounded-xl tw-px-1 tw-py-1 tw-outline-none hover:tw-bg-white/[0.05] focus-visible:tw-ring-2 focus-visible:tw-ring-violet-500/45">
+                        <h2 class="tw-font-display tw-text-lg tw-font-semibold tw-text-white tw-mb-0">{% ui 'recent_votes' %}</h2>
+                        <svg class="admin-dash-disclosure-chevron tw-h-5 tw-w-5 tw-shrink-0 tw-text-white/55 tw-transition-transform tw-duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                    </summary>
+                    <div class="tw-mt-4">
                     <div class="tw-space-y-2 md:tw-hidden">
                         {% for vote in recent_votes %}
                         <article class="tw-rounded-xl tw-border tw-border-white/[0.08] tw-bg-white/[0.02] tw-p-3">
@@ -127,10 +142,15 @@
                             </tbody>
                         </table>
                     </div>
-                </section>
+                    </div>
+                </details>
 
-                <section class="tw-rounded-3xl tw-border tw-border-white/[0.08] tw-bg-white/[0.03] tw-backdrop-blur-md tw-p-5 sm:tw-p-6">
-                    <h2 class="tw-font-display tw-text-lg tw-font-semibold tw-text-white tw-mb-4">{% ui 'recent_contacts' %}</h2>
+                <details class="admin-dash-disclosure tw-rounded-3xl tw-border tw-border-white/[0.08] tw-bg-white/[0.03] tw-backdrop-blur-md tw-p-5 sm:tw-p-6">
+                    <summary class="tw-flex tw-cursor-pointer tw-list-none tw-items-center tw-justify-between tw-gap-3 tw-rounded-xl tw-px-1 tw-py-1 tw-outline-none hover:tw-bg-white/[0.05] focus-visible:tw-ring-2 focus-visible:tw-ring-violet-500/45">
+                        <h2 class="tw-font-display tw-text-lg tw-font-semibold tw-text-white tw-mb-0">{% ui 'recent_contacts' %}</h2>
+                        <svg class="admin-dash-disclosure-chevron tw-h-5 tw-w-5 tw-shrink-0 tw-text-white/55 tw-transition-transform tw-duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                    </summary>
+                    <div class="tw-mt-4">
                     <div class="tw-space-y-2 md:tw-hidden">
                         {% for item in recent_contacts %}
                         <article class="tw-rounded-xl tw-border tw-border-white/[0.08] tw-bg-white/[0.02] tw-p-3">
@@ -167,7 +187,8 @@
                             </tbody>
                         </table>
                     </div>
-                </section>
+                    </div>
+                </details>
             </div>
         </div>
     </div>

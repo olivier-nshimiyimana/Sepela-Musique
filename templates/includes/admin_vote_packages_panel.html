@@ -1,8 +1,13 @@
 {% load price_display ui_i18n %}
-<section class="tw-rounded-3xl tw-border tw-border-white/[0.08] tw-bg-white/[0.03] tw-backdrop-blur-md tw-p-5 sm:tw-p-6 tw-mb-8 tw-font-sans">
-    <h2 class="tw-font-display tw-text-xl tw-font-semibold tw-text-white tw-mb-2">Vote packages (checkout)</h2>
-    <p class="tw-text-xs tw-text-white/45 tw-mb-6">Buyers pick one package on the paid vote page: votes + price + currency. Inactive packages stay hidden.</p>
-
+<details class="admin-dash-disclosure tw-rounded-3xl tw-border tw-border-white/[0.08] tw-bg-white/[0.03] tw-backdrop-blur-md tw-p-5 sm:tw-p-6 tw-mb-8 tw-font-sans">
+    <summary class="tw-flex tw-cursor-pointer tw-list-none tw-items-start tw-justify-between tw-gap-3 tw-rounded-xl tw-px-1 tw-py-1 tw-outline-none hover:tw-bg-white/[0.05] focus-visible:tw-ring-2 focus-visible:tw-ring-violet-500/45">
+        <div class="tw-min-w-0 tw-pr-2 tw-text-left">
+            <h2 class="tw-font-display tw-text-xl tw-font-semibold tw-text-white tw-mb-2 tw-pointer-events-none">Vote packages (checkout)</h2>
+            <p class="tw-text-xs tw-text-white/45 tw-mb-0 tw-pointer-events-none">Buyers pick one package on the paid vote page: votes + price + currency. Inactive packages stay hidden.</p>
+        </div>
+        <svg class="admin-dash-disclosure-chevron tw-mt-1 tw-h-5 tw-w-5 tw-shrink-0 tw-text-white/55 tw-transition-transform tw-duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+    </summary>
+    <div class="tw-mt-5">
     {% if vote_packages %}
     <div class="tw-space-y-6 tw-mb-8">
         {% for pkg in vote_packages %}
@@ -86,4 +91,5 @@
             </div>
         </form>
     </div>
-</section>
+    </div>
+</details>
