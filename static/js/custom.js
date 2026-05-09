@@ -285,7 +285,13 @@ $(document).ready(function () {
             e.preventDefault();
             return;
         }
-        sfMarkFormSubmitting(form);
+        form.dataset.sfSubmitInFlight = '1';
+        // Defer disabling submit buttons until after the default form-submit action has
+        // built the entry list. Synchronously disabling in this handler drops the
+        // submitter's name/value (e.g. action=approve_vote_requests), breaking POST handlers.
+        window.setTimeout(function () {
+            sfMarkFormSubmitting(form);
+        }, 0);
     }, false);
 
     window.addEventListener('pageshow', function (ev) {

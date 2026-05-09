@@ -43,19 +43,6 @@
                     </div>
                     <button type="submit" class="tw-inline-flex tw-items-center tw-rounded-xl tw-bg-gradient-to-r tw-from-violet-600 tw-to-fuchsia-600 tw-px-5 tw-py-2.5 tw-text-sm tw-font-semibold tw-text-white">{% ui 'save_site_mode' %}</button>
                 </form>
-                <div class="tw-mt-5 tw-rounded-xl tw-border tw-border-white/10 tw-bg-black/30 tw-p-4">
-                    <p class="tw-text-[11px] tw-font-semibold tw-text-violet-200/90 tw-uppercase tw-tracking-wide tw-mb-2">{% ui 'site_mode_template_hint' %}</p>
-                    <p class="tw-text-xs tw-text-white/45 tw-mb-2">{% ui 'site_mode_template_vars' %}</p>
-                    {% verbatim %}
-<pre class="tw-m-0 tw-overflow-x-auto tw-whitespace-pre-wrap tw-break-words tw-text-left tw-text-[11px] tw-leading-relaxed tw-text-emerald-100/90 tw-font-mono">{% if SITE_MODE == 'MISS_KATANGA' %}
-  Candidate · Contestant photo · Contestant
-{% else %}
-  Artist · Music / video · Song
-{% endif %}
-
-{% if SITE_MODE_IS_MISS_KATANGA %}… pageant-only block …{% endif %}</pre>
-                    {% endverbatim %}
-                </div>
             </section>
 
             <section class="tw-rounded-3xl tw-border tw-border-white/[0.08] tw-bg-white/[0.03] tw-backdrop-blur-md tw-p-5 sm:tw-p-6 tw-mb-8">
