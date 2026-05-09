@@ -1,0 +1,53 @@
+{% load price_display %}
+<div class="tw-overflow-x-auto tw-rounded-xl tw-border tw-border-white/[0.06] tw-bg-black/15">
+    <table class="tw-min-w-full tw-text-sm">
+        <thead class="tw-text-white/55 tw-text-left tw-border-b tw-border-white/10">
+            <tr>
+                {% if actionable %}
+                <th class="tw-w-10 tw-px-3 tw-py-3 tw-font-semibold"><span class="tw-sr-only">Select</span></th>
+                {% endif %}
+                <th class="tw-px-3 tw-py-3 tw-font-semibold">Email</th>
+                <th class="tw-px-3 tw-py-3 tw-font-semibold">Song</th>
+                <th class="tw-px-3 tw-py-3 tw-font-semibold">Package</th>
+                <th class="tw-px-3 tw-py-3 tw-font-semibold tw-whitespace-nowrap">Amount</th>
+                <th class="tw-px-3 tw-py-3 tw-font-semibold tw-whitespace-nowrap">Votes</th>
+                <th class="tw-px-3 tw-py-3 tw-font-semibold tw-whitespace-nowrap">Paid via</th>
+                <th class="tw-px-3 tw-py-3 tw-font-semibold tw-whitespace-nowrap">Status</th>
+                <th class="tw-px-3 tw-py-3 tw-font-semibold tw-whitespace-nowrap">Proof</th>
+                <th class="tw-px-3 tw-py-3 tw-font-semibold tw-whitespace-nowrap">Reference</th>
+                <th class="tw-px-3 tw-py-3 tw-font-semibold tw-whitespace-nowrap">Created</th>
+            </tr>
+        </thead>
+        <tbody class="tw-text-white/80">
+            {% for vr in vote_requests %}
+            <tr class="tw-border-b tw-border-white/[0.05] last:tw-border-0">
+                {% if actionable %}
+                <td class="tw-px-3 tw-py-3 tw-align-middle">
+                    {% if vr.status == 'Pending' %}
+                    <input type="checkbox" name="vote_request_id" value="{{ vr.pk }}" class="vr-cb tw-rounded tw-border-white/25 tw-bg-black/40 tw-text-emerald-500 focus:tw-ring-emerald-500/40">
+                    {% endif %}
+                </td>
+                {% endif %}
+                <td class="tw-px-3 tw-py-3 tw-break-all tw-max-w-[140px]">{{ vr.email }}</td>
+                <td class="tw-px-3 tw-py-3 tw-text-white/90 tw-break-words tw-max-w-[160px]">{{ vr.song.title }}</td>
+                <td class="tw-px-3 tw-py-3">{{ vr.package }}</td>
+                <td class="tw-px-3 tw-py-3 tw-tabular-nums tw-whitespace-nowrap">{% if vr.price_amount is not None %}{{ vr.price_amount|price_plain }} {{ vr.currency_code }}{% else %}—{% endif %}</td>
+                <td class="tw-px-3 tw-py-3 tw-tabular-nums">{{ vr.vote_count }}</td>
+                <td class="tw-px-3 tw-py-3 tw-text-xs tw-break-words tw-max-w-[120px]">{% if vr.payment_method %}{{ vr.payment_method_label }}<br><span class="tw-text-white/50">{{ vr.payment_method_number }}</span>{% else %}—{% endif %}</td>
+                <td class="tw-px-3 tw-py-3">
+                            {% if vr.status == 'Pending' %}<span class="tw-text-amber-200/95">Pending</span>{% elif vr.status == 'Approved' %}<span class="tw-text-emerald-300/95">Approved</span>{% else %}<span class="tw-text-rose-300/95">Rejected</span>{% endif %}
+                        </td>
+                        <td class="tw-px-3 tw-py-3 tw-whitespace-nowrap">
+                            {% if vr.payment_proof %}
+                            <a href="{{ vr.payment_proof.url }}" target="_blank" rel="noopener" class="tw-text-violet-300 hover:tw-text-violet-200 tw-text-xs tw-font-semibold">Open</a>
+                            {% else %}
+                            <span class="tw-text-white/35">—</span>
+                            {% endif %}
+                        </td>
+                        <td class="tw-px-3 tw-py-3 tw-font-mono tw-text-[11px] tw-text-white/65 tw-whitespace-nowrap">{{ vr.transaction_id }}</td>
+                <td class="tw-px-3 tw-py-3 tw-text-xs tw-text-white/55 tw-whitespace-nowrap">{{ vr.created_at|date:"Y-m-d H:i" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

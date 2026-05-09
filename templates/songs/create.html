@@ -1,5 +1,5 @@
 {% extends 'layouts/base.html' %}
-{% load static %}
+{% load static ui_i18n %}
 
 {% block stylesheets %}
 {% include 'includes/tw_theme_setup.html' %}
@@ -16,22 +16,26 @@
         <div class="premium-content tw-max-w-xl tw-mx-auto tw-px-4 sm:tw-px-6">
 
             <header class="tw-mb-8 tw-opacity-0 tw-animate-fade-up" style="animation-fill-mode: forwards;">
-                <p class="tw-font-sans tw-text-xs tw-font-semibold tw-tracking-[0.2em] tw-text-fuchsia-400/90 tw-uppercase tw-mb-2">Artist upload</p>
-                <h1 class="tw-font-display tw-text-2xl sm:tw-text-3xl tw-font-bold tw-text-white tw-tracking-tight">Add a track</h1>
+                <p class="tw-font-sans tw-text-xs tw-font-semibold tw-tracking-[0.2em] tw-text-fuchsia-400/90 tw-uppercase tw-mb-2">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_create_kicker' %}{% else %}{% ui 'mk_create_kicker_art' %}{% endif %}</p>
+                <h1 class="tw-font-display tw-text-2xl sm:tw-text-3xl tw-font-bold tw-text-white tw-tracking-tight">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_create_title' %}{% else %}{% ui 'mk_create_title_art' %}{% endif %}</h1>
                 <p class="tw-mt-3 tw-text-sm tw-text-white/50 tw-font-sans tw-leading-relaxed">
+                    {% if SITE_MODE == 'MISS_KATANGA' %}
+                    {% ui 'mk_create_intro' %}
+                    {% else %}
                     Provide a <strong class="tw-text-white/80">video</strong> and/or a <strong class="tw-text-white/80">thumbnail image</strong>. At least one is required so listeners can vote.
+                    {% endif %}
                 </p>
             </header>
 
             <div class="tw-rounded-3xl tw-border tw-border-white/[0.08] tw-bg-white/[0.04] tw-backdrop-blur-xl tw-p-6 sm:tw-p-8 tw-shadow-[0_25px_80px_-20px_rgba(124,58,237,0.35)] tw-opacity-0 tw-animate-fade-up-delay tw-font-sans" style="animation-fill-mode: forwards;">
-                <form action="{% url 'core:upload' %}" method="post" enctype="multipart/form-data" class="tw-space-y-5" id="song-create-form">
+                <form action="{% url 'core:upload' %}" method="post" enctype="multipart/form-data" class="tw-space-y-5 sf-submit-state" id="song-create-form" data-sf-busy-label="{% filter escapejs %}{% ui 'form_processing' %}{% endfilter %}">
                     {% csrf_token %}
 
                     <div>
-                        <label for="songName" class="tw-block tw-text-xs tw-font-semibold tw-tracking-wide tw-text-white/50 tw-mb-2 tw-uppercase">Song name</label>
+                        <label for="songName" class="tw-block tw-text-xs tw-font-semibold tw-tracking-wide tw-text-white/50 tw-mb-2 tw-uppercase">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_field_song_name' %}{% else %}{% ui 'song_name_label' %}{% endif %}</label>
                         <input type="text" name="song_title" id="songName" required
                             class="tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/30 tw-px-4 tw-py-3 tw-text-sm tw-text-white tw-placeholder-white/30 tw-outline-none focus:tw-border-violet-400/50 focus:tw-ring-2 focus:tw-ring-violet-500/30"
-                            placeholder="Track title">
+                            placeholder="{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_placeholder_song_title' %}{% else %}{% ui 'track' %}{% endif %}">
                     </div>
 
                     <div>

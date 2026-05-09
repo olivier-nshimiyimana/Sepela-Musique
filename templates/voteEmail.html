@@ -17,10 +17,10 @@
         <div class="premium-content tw-max-w-lg tw-mx-auto tw-px-4 sm:tw-px-6">
 
             <header class="tw-text-center tw-mb-8 tw-opacity-0 tw-animate-fade-up" style="animation-fill-mode: forwards;">
-                <p class="tw-font-sans tw-text-xs tw-font-semibold tw-tracking-[0.2em] tw-text-fuchsia-400/90 tw-uppercase tw-mb-2">{% ui 'confirm_vote' %}</p>
-                <h1 class="tw-font-display tw-text-2xl sm:tw-text-3xl tw-font-bold tw-text-white tw-tracking-tight">{% ui 'cast_vote' %}</h1>
+                <p class="tw-font-sans tw-text-xs tw-font-semibold tw-tracking-[0.2em] tw-text-fuchsia-400/90 tw-uppercase tw-mb-2">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_confirm_vote' %}{% else %}{% ui 'confirm_vote' %}{% endif %}</p>
+                <h1 class="tw-font-display tw-text-2xl sm:tw-text-3xl tw-font-bold tw-text-white tw-tracking-tight">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_cast_vote' %}{% else %}{% ui 'cast_vote' %}{% endif %}</h1>
                 <p class="tw-mt-3 tw-text-sm tw-text-white/50 tw-font-sans tw-leading-relaxed">
-                    {% ui 'vote_desc' %}
+                    {% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_vote_desc' %}{% else %}{% ui 'vote_desc' %}{% endif %}
                 </p>
             </header>
 
@@ -31,7 +31,7 @@
             {% endif %}
 
             <div class="tw-rounded-3xl tw-border tw-border-white/[0.08] tw-bg-white/[0.04] tw-backdrop-blur-xl tw-p-6 sm:tw-p-8 tw-shadow-[0_25px_80px_-20px_rgba(124,58,237,0.35)] tw-opacity-0 tw-animate-fade-up-delay" style="animation-fill-mode: forwards;">
-                <form action="{% url 'core:vote' %}" method="post" enctype="multipart/form-data" class="tw-space-y-5 tw-font-sans">
+                <form action="{% url 'core:vote' %}" method="post" enctype="multipart/form-data" class="tw-space-y-5 tw-font-sans sf-submit-state" data-sf-busy-label="{% filter escapejs %}{% ui 'form_processing' %}{% endfilter %}">
                     {% csrf_token %}
                     <input type="hidden" name="song_id" value="{{ id }}">
 
@@ -44,7 +44,7 @@
 
                     <div class="tw-flex tw-flex-col sm:tw-flex-row tw-gap-3 tw-pt-2">
                         <button type="submit" class="tw-inline-flex tw-flex-1 tw-items-center tw-justify-center tw-rounded-xl tw-bg-gradient-to-r tw-from-violet-600 tw-to-fuchsia-600 tw-px-5 tw-py-3.5 tw-text-sm tw-font-semibold tw-text-white tw-shadow-lg tw-shadow-violet-600/25 tw-transition hover:tw-brightness-110 focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-fuchsia-400/50">
-                            {% ui 'send_confirmation' %}
+                            {% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_send_confirmation' %}{% else %}{% ui 'send_confirmation' %}{% endif %}
                         </button>
                         <a href="{% url 'core:home' %}" class="tw-inline-flex tw-items-center tw-justify-center tw-rounded-xl tw-border tw-border-white/15 tw-bg-white/[0.04] tw-px-5 tw-py-3.5 tw-text-sm tw-font-semibold tw-text-white/85 tw-transition hover:tw-bg-white/[0.08]">
                             {% ui 'cancel' %}

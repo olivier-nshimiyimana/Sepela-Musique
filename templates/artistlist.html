@@ -14,9 +14,9 @@
             <header class="tw-mb-8">
                 <p class="tw-text-xs tw-font-semibold tw-tracking-[0.2em] tw-text-fuchsia-400/90 tw-uppercase tw-mb-2">{% ui 'admin_workspace' %}</p>
                 <h1 class="tw-font-display tw-text-2xl sm:tw-text-3xl tw-font-bold tw-text-white tw-tracking-tight">
-                    <span class="tw-bg-gradient-to-r tw-from-violet-300 tw-via-fuchsia-400 tw-to-cyan-300 tw-bg-clip-text tw-text-transparent">{% ui 'artist_list' %}</span>
+                    <span class="tw-bg-gradient-to-r tw-from-violet-300 tw-via-fuchsia-400 tw-to-cyan-300 tw-bg-clip-text tw-text-transparent">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_artistlist_title' %}{% else %}{% ui 'artist_list' %}{% endif %}</span>
                 </h1>
-                <p class="tw-mt-2 tw-text-sm tw-text-white/50">{% ui 'artists' %} · {{ artists|length }}</p>
+                <p class="tw-mt-2 tw-text-sm tw-text-white/50">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_admin_stat_artists' %}{% else %}{% ui 'artists' %}{% endif %} · {{ artists|length }}</p>
             </header>
 
             {% if artists %}

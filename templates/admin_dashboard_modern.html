@@ -15,36 +15,81 @@
                 <h1 class="tw-font-display tw-text-3xl sm:tw-text-4xl tw-font-bold tw-leading-tight">
                     <span class="tw-bg-gradient-to-r tw-from-violet-300 tw-via-fuchsia-400 tw-to-cyan-300 tw-bg-clip-text tw-text-transparent">{% ui 'admin_dashboard' %}</span>
                 </h1>
-                <p class="tw-mt-3 tw-text-white/55 tw-font-sans tw-max-w-2xl">{% ui 'admin_desc' %}</p>
+                <p class="tw-mt-3 tw-text-white/55 tw-font-sans tw-max-w-2xl">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_admin_desc' %}{% else %}{% ui 'admin_desc' %}{% endif %}</p>
             </header>
 
             <section class="tw-grid tw-grid-cols-2 lg:tw-grid-cols-4 tw-gap-4 tw-mb-8 tw-font-sans">
-                <div class="tw-rounded-2xl tw-border tw-border-white/[0.08] tw-bg-white/[0.03] tw-p-4 tw-backdrop-blur-sm"><p class="tw-text-xs tw-uppercase tw-tracking-wide tw-text-white/45">{% ui 'artists' %}</p><p class="tw-mt-1 tw-text-2xl tw-font-bold tw-text-white">{{ uploads }}</p></div>
-                <div class="tw-rounded-2xl tw-border tw-border-white/[0.08] tw-bg-white/[0.03] tw-p-4 tw-backdrop-blur-sm"><p class="tw-text-xs tw-uppercase tw-tracking-wide tw-text-white/45">{% ui 'songs' %}</p><p class="tw-mt-1 tw-text-2xl tw-font-bold tw-text-white">{{ total_songs }}</p></div>
-                <div class="tw-rounded-2xl tw-border tw-border-white/[0.08] tw-bg-white/[0.03] tw-p-4 tw-backdrop-blur-sm"><p class="tw-text-xs tw-uppercase tw-tracking-wide tw-text-white/45">{% ui 'vote' %}</p><p class="tw-mt-1 tw-text-2xl tw-font-bold tw-text-white">{{ total_votes }}</p></div>
+                <div class="tw-rounded-2xl tw-border tw-border-white/[0.08] tw-bg-white/[0.03] tw-p-4 tw-backdrop-blur-sm"><p class="tw-text-xs tw-uppercase tw-tracking-wide tw-text-white/45">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_admin_stat_artists' %}{% else %}{% ui 'artists' %}{% endif %}</p><p class="tw-mt-1 tw-text-2xl tw-font-bold tw-text-white">{{ uploads }}</p></div>
+                <div class="tw-rounded-2xl tw-border tw-border-white/[0.08] tw-bg-white/[0.03] tw-p-4 tw-backdrop-blur-sm"><p class="tw-text-xs tw-uppercase tw-tracking-wide tw-text-white/45">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_admin_stat_songs' %}{% else %}{% ui 'songs' %}{% endif %}</p><p class="tw-mt-1 tw-text-2xl tw-font-bold tw-text-white">{{ total_songs }}</p></div>
+                <div class="tw-rounded-2xl tw-border tw-border-white/[0.08] tw-bg-white/[0.03] tw-p-4 tw-backdrop-blur-sm"><p class="tw-text-xs tw-uppercase tw-tracking-wide tw-text-white/45">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_vote' %}{% else %}{% ui 'vote' %}{% endif %}</p><p class="tw-mt-1 tw-text-2xl tw-font-bold tw-text-white">{{ total_votes }}</p></div>
                 <div class="tw-rounded-2xl tw-border tw-border-white/[0.08] tw-bg-white/[0.03] tw-p-4 tw-backdrop-blur-sm"><p class="tw-text-xs tw-uppercase tw-tracking-wide tw-text-white/45">{% ui 'contacts' %}</p><p class="tw-mt-1 tw-text-2xl tw-font-bold tw-text-white">{{ total_contacts }}</p></div>
+            </section>
+
+            <section class="tw-rounded-3xl tw-border tw-border-white/[0.08] tw-bg-white/[0.03] tw-backdrop-blur-md tw-p-5 sm:tw-p-6 tw-mb-8 tw-font-sans">
+                <h2 class="tw-font-display tw-text-xl tw-font-semibold tw-text-white tw-mb-2">{% ui 'site_mode_title' %}</h2>
+                <p class="tw-text-xs tw-text-white/50 tw-mb-4 tw-leading-relaxed">{% ui 'site_mode_help' %}</p>
+                <form method="post" action="{% url 'core:app_administration' %}" class="tw-space-y-4 sf-submit-state" data-sf-busy-label="{% filter escapejs %}{% ui 'form_processing' %}{% endfilter %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="save_site_configuration">
+                    <div class="tw-flex tw-flex-col sm:tw-flex-row sm:tw-flex-wrap tw-gap-3">
+                        <label class="tw-flex tw-cursor-pointer tw-items-center tw-gap-2 tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/20 tw-px-4 tw-py-3 tw-text-sm tw-text-white/90 has-[:checked]:tw-border-violet-400/50 has-[:checked]:tw-bg-violet-500/10">
+                            <input type="radio" name="site_mode" value="ART_COMPETITION" class="tw-accent-violet-500" {% if site_configuration.mode == 'ART_COMPETITION' %}checked{% endif %}>
+                            <span>{% ui 'site_mode_art_competition' %}</span>
+                        </label>
+                        <label class="tw-flex tw-cursor-pointer tw-items-center tw-gap-2 tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/20 tw-px-4 tw-py-3 tw-text-sm tw-text-white/90 has-[:checked]:tw-border-fuchsia-400/50 has-[:checked]:tw-bg-fuchsia-500/10">
+                            <input type="radio" name="site_mode" value="MISS_KATANGA" class="tw-accent-fuchsia-500" {% if site_configuration.mode == 'MISS_KATANGA' %}checked{% endif %}>
+                            <span>{% ui 'site_mode_miss_katanga' %}</span>
+                        </label>
+                    </div>
+                    <button type="submit" class="tw-inline-flex tw-items-center tw-rounded-xl tw-bg-gradient-to-r tw-from-violet-600 tw-to-fuchsia-600 tw-px-5 tw-py-2.5 tw-text-sm tw-font-semibold tw-text-white">{% ui 'save_site_mode' %}</button>
+                </form>
+                <div class="tw-mt-5 tw-rounded-xl tw-border tw-border-white/10 tw-bg-black/30 tw-p-4">
+                    <p class="tw-text-[11px] tw-font-semibold tw-text-violet-200/90 tw-uppercase tw-tracking-wide tw-mb-2">{% ui 'site_mode_template_hint' %}</p>
+                    <p class="tw-text-xs tw-text-white/45 tw-mb-2">{% ui 'site_mode_template_vars' %}</p>
+                    {% verbatim %}
+<pre class="tw-m-0 tw-overflow-x-auto tw-whitespace-pre-wrap tw-break-words tw-text-left tw-text-[11px] tw-leading-relaxed tw-text-emerald-100/90 tw-font-mono">{% if SITE_MODE == 'MISS_KATANGA' %}
+  Candidate · Contestant photo · Contestant
+{% else %}
+  Artist · Music / video · Song
+{% endif %}
+
+{% if SITE_MODE_IS_MISS_KATANGA %}… pageant-only block …{% endif %}</pre>
+                    {% endverbatim %}
+                </div>
             </section>
 
             <section class="tw-rounded-3xl tw-border tw-border-white/[0.08] tw-bg-white/[0.03] tw-backdrop-blur-md tw-p-5 sm:tw-p-6 tw-mb-8">
                 <h2 class="tw-font-display tw-text-xl tw-font-semibold tw-text-white tw-mb-4">{% ui 'site_settings' %}</h2>
-                <form method="post" action="{% url 'core:app_administration' %}" class="tw-font-sans">
+                <form method="post" action="{% url 'core:app_administration' %}" class="tw-font-sans sf-submit-state" data-sf-busy-label="{% filter escapejs %}{% ui 'form_processing' %}{% endfilter %}">
                     {% csrf_token %}
                     <input type="hidden" name="action" value="save_site_settings">
                     <div class="tw-grid tw-grid-cols-1 md:tw-grid-cols-2 tw-gap-4">
                         <input type="text" name="site_title" value="{{ site_settings.site_title }}" required class="tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white" placeholder="Site title">
                         <input type="email" name="contact_email" value="{{ site_settings.contact_email }}" required class="tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white" placeholder="Contact email">
                         <input type="text" name="contact_phone" value="{{ site_settings.contact_phone }}" class="tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white" placeholder="Contact phone">
+                        <input type="text" name="whatsapp_payments_phone" value="{{ site_settings.whatsapp_payments_phone }}" class="tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white" placeholder="+243… — WhatsApp (payment screenshots)" aria-describedby="whatsapp-payments-help">
                         <input type="email" name="vote_from_email" value="{{ site_settings.vote_from_email }}" required class="tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white" placeholder="Vote from email">
+                        <input type="text" name="payment_registered_name" value="{{ site_settings.payment_registered_name }}" class="tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white" placeholder="Registered name (mobile money)" aria-describedby="mobile-money-help">
+                        <input type="text" name="airtel_money_number" value="{{ site_settings.airtel_money_number }}" class="tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white" placeholder="Airtel Money number">
+                        <input type="text" name="afrimoney_number" value="{{ site_settings.afrimoney_number }}" class="tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white" placeholder="Afrimoney number">
+                        <input type="text" name="mpesa_number" value="{{ site_settings.mpesa_number }}" class="tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white" placeholder="M-Pesa number">
                         <textarea rows="3" name="contact_address" class="md:tw-col-span-2 tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white" placeholder="Contact address">{{ site_settings.contact_address }}</textarea>
+                        <textarea rows="3" name="payment_instructions_note" class="md:tw-col-span-2 tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/25 tw-px-3 tw-py-2.5 tw-text-sm tw-text-white" placeholder="Extra payment notes for buyers (optional)">{{ site_settings.payment_instructions_note }}</textarea>
+                        <p id="whatsapp-payments-help" class="md:tw-col-span-2 tw-text-xs tw-text-white/45 tw-font-sans"><strong class="tw-text-white/65">WhatsApp (vote checkout):</strong> only this number is used for <code class="tw-text-white/70">wa.me</code> links. It is <strong class="tw-text-white/65">not</strong> taken from the public contact phone — set it here (e.g. +243 986 764 403).</p>
+                        <p id="mobile-money-help" class="md:tw-col-span-2 tw-text-xs tw-text-white/45 tw-font-sans"><strong class="tw-text-white/65">Mobile money:</strong> shown after checkout so buyers know amount + numbers + registered name. Add vote packages below.</p>
                     </div>
                     <button type="submit" class="tw-mt-4 tw-inline-flex tw-items-center tw-rounded-xl tw-bg-gradient-to-r tw-from-violet-600 tw-to-fuchsia-600 tw-px-5 tw-py-2.5 tw-text-sm tw-font-semibold tw-text-white">{% ui 'save_settings' %}</button>
                 </form>
             </section>
 
+            {% include 'includes/admin_vote_packages_panel.html' %}
+
+            {% include 'includes/admin_vote_requests_panel.html' %}
+
             <section class="tw-mb-8 tw-font-sans">
                 <div class="tw-flex tw-flex-wrap tw-items-end tw-justify-between tw-gap-4 tw-mb-5">
                     <div>
-                        <h2 class="tw-font-display tw-text-xl tw-font-semibold tw-text-white tw-tracking-tight">{% ui 'recent_songs_moderation' %}</h2>
+                        <h2 class="tw-font-display tw-text-xl tw-font-semibold tw-text-white tw-tracking-tight">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_recent_songs_moderation' %}{% else %}{% ui 'recent_songs_moderation' %}{% endif %}</h2>
                     </div>
                 </div>
                 {% if recent_songs %}
@@ -55,7 +100,7 @@
                 </div>
                 {% else %}
                 <div class="tw-rounded-2xl tw-border tw-border-dashed tw-border-white/15 tw-bg-white/[0.02] tw-py-14 tw-px-6 tw-text-center">
-                    <p class="tw-text-sm tw-text-white/45">{% ui 'no_songs_found' %}</p>
+                    <p class="tw-text-sm tw-text-white/45">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_no_songs_found' %}{% else %}{% ui 'no_songs_found' %}{% endif %}</p>
                 </div>
                 {% endif %}
             </section>
@@ -66,7 +111,7 @@
                     <div class="tw-space-y-2 md:tw-hidden">
                         {% for vote in recent_votes %}
                         <article class="tw-rounded-xl tw-border tw-border-white/[0.08] tw-bg-white/[0.02] tw-p-3">
-                            <p class="tw-text-xs tw-text-white/55">{% ui 'songs' %}</p>
+                            <p class="tw-text-xs tw-text-white/55">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_table_entry' %}{% else %}{% ui 'songs' %}{% endif %}</p>
                             <p class="tw-text-sm tw-font-semibold tw-text-white tw-break-words">{{ vote.song_title }}</p>
                             <p class="tw-mt-2 tw-text-xs tw-text-white/55">{% ui 'voter_email' %}</p>
                             <p class="tw-text-sm tw-text-white/80 tw-break-all">{{ vote.voter_Email }}</p>
@@ -79,7 +124,7 @@
                         <table class="tw-min-w-full tw-text-sm tw-font-sans">
                             <thead class="tw-text-white/55">
                                 <tr class="tw-border-b tw-border-white/10">
-                                    <th class="tw-text-left tw-font-semibold tw-px-3 tw-py-3">{% ui 'songs' %}</th>
+                                    <th class="tw-text-left tw-font-semibold tw-px-3 tw-py-3">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_table_entry' %}{% else %}{% ui 'songs' %}{% endif %}</th>
                                     <th class="tw-text-left tw-font-semibold tw-px-3 tw-py-3">{% ui 'voter_email' %}</th>
                                 </tr>
                             </thead>

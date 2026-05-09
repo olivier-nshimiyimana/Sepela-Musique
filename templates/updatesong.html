@@ -1,5 +1,5 @@
 {% extends 'layouts/base.html' %}
-{% load static %}
+{% load static ui_i18n %}
 
 {% block stylesheets %}
 {% include 'includes/tw_theme_setup.html' %}
@@ -16,10 +16,10 @@
         <div class="premium-content tw-max-w-xl tw-mx-auto tw-px-4 sm:tw-px-6">
 
             <header class="tw-mb-8 tw-opacity-0 tw-animate-fade-up" style="animation-fill-mode: forwards;">
-                <p class="tw-font-sans tw-text-xs tw-font-semibold tw-tracking-[0.2em] tw-text-fuchsia-400/90 tw-uppercase tw-mb-2">Artist edit</p>
-                <h1 class="tw-font-display tw-text-2xl sm:tw-text-3xl tw-font-bold tw-text-white tw-tracking-tight">Update track</h1>
+                <p class="tw-font-sans tw-text-xs tw-font-semibold tw-tracking-[0.2em] tw-text-fuchsia-400/90 tw-uppercase tw-mb-2">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_updatesong_kicker' %}{% else %}{% ui 'artist_edit_kicker' %}{% endif %}</p>
+                <h1 class="tw-font-display tw-text-2xl sm:tw-text-3xl tw-font-bold tw-text-white tw-tracking-tight">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_updatesong_title' %}{% else %}{% ui 'artist_update_track_title' %}{% endif %}</h1>
                 <p class="tw-mt-3 tw-text-sm tw-text-white/50 tw-font-sans tw-leading-relaxed">
-                    Editing is allowed only while this song has <strong class="tw-text-white/80">zero votes</strong>. Keep at least one video or thumbnail.
+                    {% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_updatesong_blurb' %}{% else %}{% ui 'artist_update_track_blurb' %}{% endif %}
                 </p>
             </header>
 
@@ -30,11 +30,11 @@
                     {% if not song.song and not song.thumbnail %}<p class="tw-text-amber-200/90">No media on file — add video or thumbnail below.</p>{% endif %}
                 </div>
 
-                <form action="{% url 'core:updaterecord' song.id %}" method="post" enctype="multipart/form-data" class="tw-space-y-5" id="song-update-form">
+                <form action="{% url 'core:updaterecord' song.id %}" method="post" enctype="multipart/form-data" class="tw-space-y-5 sf-submit-state" id="song-update-form" data-sf-busy-label="{% filter escapejs %}{% ui 'form_processing' %}{% endfilter %}">
                     {% csrf_token %}
 
                     <div>
-                        <label for="songName" class="tw-block tw-text-xs tw-font-semibold tw-tracking-wide tw-text-white/50 tw-mb-2 tw-uppercase">Song name</label>
+                        <label for="songName" class="tw-block tw-text-xs tw-font-semibold tw-tracking-wide tw-text-white/50 tw-mb-2 tw-uppercase">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_field_song_name' %}{% else %}{% ui 'song_name_label' %}{% endif %}</label>
                         <input type="text" name="song_title" id="songName" required value="{{ song.title }}"
                             class="tw-w-full tw-rounded-xl tw-border tw-border-white/15 tw-bg-black/30 tw-px-4 tw-py-3 tw-text-sm tw-text-white tw-outline-none focus:tw-border-violet-400/50 focus:tw-ring-2 focus:tw-ring-violet-500/30">
                     </div>
@@ -61,17 +61,17 @@
 
                     <div class="tw-flex tw-flex-col sm:tw-flex-row tw-gap-3 tw-pt-2">
                         <button type="submit" class="tw-inline-flex tw-flex-1 tw-items-center tw-justify-center tw-rounded-xl tw-bg-gradient-to-r tw-from-violet-600 tw-to-fuchsia-600 tw-px-5 tw-py-3.5 tw-text-sm tw-font-semibold tw-text-white tw-shadow-lg tw-transition hover:tw-brightness-110 focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-fuchsia-400/50">
-                            Update song
+                            {% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_updatesong_save' %}{% else %}{% ui 'updatesong_save_button' %}{% endif %}
                         </button>
                         <a href="{% url 'core:home' %}" class="tw-inline-flex tw-items-center tw-justify-center tw-rounded-xl tw-border tw-border-white/20 tw-bg-white/[0.04] tw-px-5 tw-py-3.5 tw-text-sm tw-font-semibold tw-text-white/90 tw-transition hover:tw-bg-white/[0.08]">
-                            Cancel
+                            {% ui 'cancel' %}
                         </a>
                     </div>
                 </form>
             </div>
 
             <p class="tw-mt-8 tw-text-center tw-text-xs tw-text-white/35 tw-font-sans">
-                <a href="{% url 'core:home' %}" class="tw-text-violet-300 hover:tw-underline">← Back to home</a>
+                <a href="{% url 'core:home' %}" class="tw-text-violet-300 hover:tw-underline">← {% ui 'back_home' %}</a>
             </p>
         </div>
     </div>

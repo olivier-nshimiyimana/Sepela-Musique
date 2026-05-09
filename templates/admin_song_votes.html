@@ -13,13 +13,14 @@
             <p class="tw-mb-4"><a href="{% url 'core:app_administration' %}" class="tw-text-sm tw-font-semibold tw-text-violet-300 hover:tw-text-violet-200">← {% ui 'administration' %}</a></p>
             <header class="tw-mb-8">
                 <h1 class="tw-font-display tw-text-2xl tw-font-bold tw-text-white tw-mb-2">{% ui 'edit_votes' %}</h1>
-                <p class="tw-text-white/55 tw-font-sans tw-text-sm">{% ui 'songs' %}: <span class="tw-text-white/90 tw-font-semibold">{{ song.title }}</span></p>
+                <p class="tw-text-white/55 tw-font-sans tw-text-sm">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_table_entry' %}{% else %}{% ui 'songs' %}{% endif %}: <span class="tw-text-white/90 tw-font-semibold">{{ song.title }}</span></p>
+                <p class="tw-mt-1 tw-text-xs tw-text-violet-200/80 tw-font-sans">Total votes shown on site (email votes + approved paid bundles): <strong>{{ combined_vote_total }}</strong></p>
                 <p class="tw-mt-2 tw-text-xs tw-text-white/40 tw-font-sans">You can correct voter emails or remove votes. Song title and media are not editable here.</p>
             </header>
 
             <section class="tw-mb-6 tw-rounded-2xl tw-border tw-border-white/[0.08] tw-bg-white/[0.03] tw-p-4 tw-font-sans">
                 <h2 class="tw-text-sm tw-font-semibold tw-text-white tw-mb-2">{% ui 'votes_suffix' %} +</h2>
-                <form method="post" action="{% url 'core:admin_song_votes' song.id %}" class="tw-flex tw-flex-col sm:tw-flex-row tw-gap-3 sm:tw-items-end">
+                <form method="post" action="{% url 'core:admin_song_votes' song.id %}" class="tw-flex tw-flex-col sm:tw-flex-row tw-gap-3 sm:tw-items-end sf-submit-state" data-sf-busy-label="{% filter escapejs %}{% ui 'form_processing' %}{% endfilter %}">
                     {% csrf_token %}
                     <input type="hidden" name="action" value="add_votes">
                     <div>
@@ -35,7 +36,7 @@
             <ul class="tw-space-y-4 tw-font-sans">
                 {% for vote in votes %}
                 <li class="tw-rounded-2xl tw-border tw-border-white/[0.08] tw-bg-white/[0.03] tw-p-4">
-                    <form method="post" action="{% url 'core:admin_song_votes' song.id %}" class="tw-flex tw-flex-col sm:tw-flex-row tw-gap-3 tw-items-start sm:tw-items-end">
+                    <form method="post" action="{% url 'core:admin_song_votes' song.id %}" class="tw-flex tw-flex-col sm:tw-flex-row tw-gap-3 tw-items-start sm:tw-items-end sf-submit-state" data-sf-busy-label="{% filter escapejs %}{% ui 'form_processing' %}{% endfilter %}">
                         {% csrf_token %}
                         <input type="hidden" name="action" value="update_vote">
                         <input type="hidden" name="vote_id" value="{{ vote.id }}">
@@ -45,7 +46,7 @@
                         </div>
                         <button type="submit" class="tw-shrink-0 tw-rounded-xl tw-bg-gradient-to-r tw-from-violet-600 tw-to-fuchsia-600 tw-px-4 tw-py-2.5 tw-text-sm tw-font-semibold tw-text-white">{% ui 'save_settings' %}</button>
                     </form>
-                    <form method="post" action="{% url 'core:admin_song_votes' song.id %}" class="tw-mt-3" onsubmit="return confirm('Remove this vote permanently?');">
+                    <form method="post" action="{% url 'core:admin_song_votes' song.id %}" class="tw-mt-3 sf-submit-state" data-sf-busy-label="{% filter escapejs %}{% ui 'form_processing' %}{% endfilter %}" onsubmit="return confirm('Remove this vote permanently?');">
                         {% csrf_token %}
                         <input type="hidden" name="action" value="delete_vote">
                         <input type="hidden" name="vote_id" value="{{ vote.id }}">

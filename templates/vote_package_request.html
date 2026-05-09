@@ -1,0 +1,207 @@
+{% extends 'layouts/base.html' %}
+{% load static ui_i18n price_display %}
+
+{% block stylesheets %}
+{% include 'includes/tw_theme_setup.html' %}
+{% endblock %}
+
+{% block content %}
+
+<main id="pageWrapper" class="vote-page-premium tw-min-h-screen tw-bg-[#07060b]">
+
+    <div class="banner bg-song"></div>
+
+    <div class="premium-page tw-relative tw-min-h-[calc(100vh-6rem)] tw-py-8 tw-pb-20 sm:tw-py-10 sm:tw-pb-16">
+        <div class="premium-mesh" aria-hidden="true"></div>
+
+        <div class="premium-content tw-w-full tw-max-w-lg tw-mx-auto tw-px-4 sm:tw-px-6">
+
+            <header class="tw-text-center tw-mb-6 sm:tw-mb-8">
+                <p class="tw-font-sans tw-text-xs tw-font-semibold tw-tracking-[0.2em] tw-text-fuchsia-400/90 tw-uppercase tw-mb-2">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_pay_vote_kicker' %}{% else %}{% ui 'pay_vote_kicker' %}{% endif %}</p>
+                <h1 class="tw-font-display tw-text-xl sm:tw-text-3xl tw-font-bold tw-text-white tw-tracking-tight tw-px-1">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_pay_vote_title' %}{% else %}{% ui 'pay_vote_title' %}{% endif %}</h1>
+                <p class="tw-mt-3 tw-text-sm tw-text-white/50 tw-font-sans tw-leading-relaxed tw-max-w-md tw-mx-auto">
+                    {% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_pay_vote_intro' %}{% else %}{% ui 'pay_vote_intro' %}{% endif %}
+                </p>
+            </header>
+
+            {% if not has_vote_packages %}
+            <div class="tw-mb-6 tw-rounded-2xl tw-border tw-border-amber-400/30 tw-bg-amber-500/10 tw-px-4 tw-py-3 tw-text-center tw-font-sans tw-text-sm tw-text-amber-100" role="alert">
+                {% ui 'pay_packages_unavailable' %}
+            </div>
+            {% endif %}
+
+            {% if form.non_field_errors %}
+            <div class="tw-mb-6 tw-rounded-2xl tw-border tw-border-rose-400/30 tw-bg-rose-500/10 tw-px-4 tw-py-3 tw-text-center tw-font-sans tw-text-sm tw-text-rose-100" role="alert">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+
+            {% if has_vote_packages %}
+            <div class="tw-rounded-3xl tw-border tw-border-white/[0.08] tw-bg-white/[0.04] tw-backdrop-blur-xl tw-p-5 sm:tw-p-8 tw-shadow-[0_25px_80px_-20px_rgba(124,58,237,0.35)]">
+                <form id="vote-pay-form" method="post" action="{{ request.get_full_path }}" enctype="multipart/form-data" class="tw-space-y-5 tw-font-sans sf-submit-state" data-sf-busy-label="{% filter escapejs %}{% ui 'form_processing' %}{% endfilter %}" data-msg-copied="{% filter escapejs %}{% ui 'pay_copied' %}{% endfilter %}">
+                    {% csrf_token %}
+
+                    <div>
+                        <label for="id_email" class="tw-block tw-text-xs tw-font-semibold tw-tracking-wide tw-text-white/55 tw-mb-2 tw-uppercase">{% ui 'pay_email' %}</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}<p class="tw-mt-1 tw-text-xs tw-text-rose-300">{{ form.email.errors.0 }}</p>{% endif %}
+                    </div>
+
+                    {% if locked_song %}
+                    <div class="tw-rounded-xl tw-border tw-border-white/10 tw-bg-black/20 tw-px-4 tw-py-3">
+                        <p class="tw-text-xs tw-font-semibold tw-text-white/45 tw-uppercase tw-mb-1">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_pay_song' %}{% else %}{% ui 'pay_song' %}{% endif %}</p>
+                        <p class="tw-text-sm tw-font-semibold tw-text-white">{{ locked_song.title }}</p>
+                        {{ form.song }}
+                    </div>
+                    {% else %}
+                    <div>
+                        <label for="id_song" class="tw-block tw-text-xs tw-font-semibold tw-tracking-wide tw-text-white/55 tw-mb-2 tw-uppercase">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_pay_song' %}{% else %}{% ui 'pay_song' %}{% endif %}</label>
+                        {{ form.song }}
+                        {% if form.song.errors %}<p class="tw-mt-1 tw-text-xs tw-text-rose-300">{{ form.song.errors.0 }}</p>{% endif %}
+                    </div>
+                    {% endif %}
+
+                    <div class="pay-package-stack tw-w-full tw-min-w-0 tw-space-y-3">
+                        <div class="tw-w-full tw-min-w-0">
+                            <label for="id_vote_package" class="tw-block tw-text-xs tw-font-semibold tw-text-violet-200/80 tw-mb-2 tw-uppercase tw-tracking-wide">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_pay_package' %}{% else %}{% ui 'pay_package' %}{% endif %}</label>
+                            <div class="tw-relative tw-w-full tw-min-w-0">
+                                <select name="vote_package" id="id_vote_package" required class="pay-package-select tw-w-full tw-min-w-0 tw-max-w-full tw-min-h-[52px] tw-appearance-none tw-rounded-xl tw-border-2 tw-border-violet-500/30 tw-bg-zinc-950/85 tw-py-3.5 tw-pl-4 tw-pr-11 tw-text-[16px] tw-leading-snug tw-text-white tw-shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] tw-transition-colors tw-duration-200 hover:tw-border-fuchsia-400/45 hover:tw-bg-zinc-900/90 focus:tw-border-fuchsia-400/70 focus:tw-bg-zinc-900 focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-fuchsia-500/35 active:tw-scale-[0.99] sm:tw-text-base">
+                                    <option value="">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_pay_package_placeholder' %}{% else %}{% ui 'pay_package_placeholder' %}{% endif %}</option>
+                                    {% for p in vote_packages %}
+                                    <option value="{{ p.pk }}" {% if form.vote_package.value == p.pk %}selected{% endif %}>{{ p.title }} — {{ p.vote_count }} {% ui 'votes_suffix' %} — {{ p.price|price_plain }} {{ p.currency }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            {% if form.vote_package.errors %}<p class="tw-mt-2 tw-text-xs tw-text-rose-300">{{ form.vote_package.errors.0 }}</p>{% endif %}
+                        </div>
+                        <div class="tw-w-full tw-min-w-0 tw-rounded-xl tw-border-2 tw-border-violet-400/25 tw-bg-gradient-to-br tw-from-violet-950/45 tw-to-zinc-950/55 tw-p-3 tw-shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] tw-transition tw-duration-200 hover:tw-border-violet-300/40 hover:tw-from-violet-950/55 hover:tw-to-zinc-950/65">
+                            <p id="pkg-preview" class="tw-text-xs tw-font-medium tw-leading-relaxed tw-text-violet-100/90 tw-min-h-[1.25rem]" aria-live="polite"></p>
+                        </div>
+                    </div>
+
+                    <div class="tw-rounded-2xl tw-border tw-border-cyan-400/20 tw-bg-cyan-950/25 tw-backdrop-blur-md tw-p-4 sm:tw-p-5">
+                        <p class="tw-text-xs tw-font-semibold tw-tracking-wide tw-text-cyan-200/90 tw-uppercase tw-mb-3">{% ui 'pay_how_title' %}</p>
+                        {% if site.payment_registered_name %}
+                        <div class="tw-flex tw-flex-wrap tw-items-center tw-gap-2 tw-mb-4">
+                            <p class="tw-text-sm tw-text-white/85 tw-grow tw-min-w-0"><span class="tw-text-white/50">{% ui 'pay_registered_name' %}:</span> <strong id="pay-reg-name" class="tw-text-white tw-break-words">{{ site.payment_registered_name }}</strong></p>
+                            <button type="button" class="sm-copy-btn tw-shrink-0 tw-min-h-[40px] tw-rounded-lg tw-border tw-border-white/20 tw-bg-white/10 tw-px-3 tw-py-2 tw-text-xs tw-font-semibold tw-text-white active:tw-scale-[0.98]" data-copy-target="pay-reg-name">{% ui 'pay_copy' %}</button>
+                        </div>
+                        {% endif %}
+
+                        {% if site.mobile_payment_options %}
+                        <div class="pay-method-stack tw-mb-3 tw-w-full tw-min-w-0 tw-space-y-3">
+                            <div class="tw-w-full tw-min-w-0">
+                                <label for="id_payment_method" class="tw-block tw-text-xs tw-font-semibold tw-text-violet-200/80 tw-mb-2 tw-uppercase tw-tracking-wide">{% ui 'pay_method_label' %}</label>
+                                <div class="tw-relative tw-w-full tw-min-w-0">
+                                    <select name="payment_method" id="id_payment_method" required class="pay-method-select tw-w-full tw-min-w-0 tw-max-w-full tw-min-h-[52px] tw-appearance-none tw-rounded-xl tw-border-2 tw-border-violet-500/30 tw-bg-zinc-950/85 tw-py-3.5 tw-pl-4 tw-pr-11 tw-text-[16px] tw-leading-snug tw-text-white tw-shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] tw-transition-colors tw-duration-200 hover:tw-border-fuchsia-400/45 hover:tw-bg-zinc-900/90 focus:tw-border-fuchsia-400/70 focus:tw-bg-zinc-900 focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-fuchsia-500/35 active:tw-scale-[0.99] sm:tw-text-base">
+                                        <option value="">{% ui 'pay_method_placeholder' %}</option>
+                                        {% for row in site.mobile_payment_options %}
+                                        <option value="{{ row.key }}" data-label="{{ row.label|escape }}" data-number="{{ row.number|escape }}" {% if request.POST.payment_method == row.key %}selected{% endif %}>{{ row.label }} — {{ row.number }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div id="pay-preview-wrap" class="tw-hidden tw-w-full tw-min-w-0 tw-rounded-xl tw-border-2 tw-border-emerald-400/30 tw-bg-gradient-to-br tw-from-emerald-950/50 tw-to-zinc-950/60 tw-p-4 tw-shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] tw-transition tw-duration-200 hover:tw-border-emerald-300/45 hover:tw-from-emerald-950/65 hover:tw-to-zinc-950/75">
+                                <p class="tw-text-xs tw-font-semibold tw-text-emerald-200/95 tw-uppercase tw-tracking-wide tw-mb-2">{% ui 'pay_selected_preview' %}</p>
+                                <p id="pay-preview-label" class="tw-text-sm tw-font-semibold tw-text-white tw-break-words"></p>
+                                <p id="pay-preview-number" class="tw-mt-2 tw-font-mono tw-text-[15px] tw-leading-relaxed tw-text-emerald-100/95 tw-break-all sm:tw-text-base"></p>
+                                <button type="button" id="pay-copy-number-btn" class="pay-copy-number-btn tw-mt-4 tw-w-full tw-min-h-[48px] tw-rounded-xl tw-border tw-border-emerald-400/35 tw-bg-emerald-500/15 tw-px-4 tw-py-2.5 tw-text-sm tw-font-semibold tw-text-emerald-50 tw-transition hover:tw-border-emerald-300/55 hover:tw-bg-emerald-500/25 active:tw-scale-[0.98] sm:tw-w-auto sm:tw-min-w-[140px]">{% ui 'pay_copy' %}</button>
+                            </div>
+                        </div>
+                        {% else %}
+                        <p class="tw-text-sm tw-text-amber-200/90">{% ui 'pay_no_numbers' %}</p>
+                        {% endif %}
+
+                        {% if site.payment_instructions_note %}
+                        <p class="tw-mt-3 tw-text-xs tw-text-white/55 tw-whitespace-pre-line">{{ site.payment_instructions_note }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="id_payment_proof" class="tw-block tw-text-xs tw-font-semibold tw-tracking-wide tw-text-white/55 tw-mb-2 tw-uppercase">{% ui 'pay_proof' %}</label>
+                        <p class="tw-mb-2 tw-text-xs tw-text-white/45">{% ui 'pay_proof_help' %}</p>
+                        {{ form.payment_proof }}
+                        {% if form.payment_proof.errors %}<p class="tw-mt-1 tw-text-xs tw-text-rose-300">{{ form.payment_proof.errors.0 }}</p>{% endif %}
+                    </div>
+
+                    <div class="tw-flex tw-flex-col tw-gap-3 tw-pt-2">
+                        <button type="submit" class="tw-inline-flex tw-w-full tw-min-h-[48px] tw-items-center tw-justify-center tw-rounded-xl tw-bg-gradient-to-r tw-from-violet-600 tw-to-fuchsia-600 tw-px-5 tw-py-3.5 tw-text-base tw-font-semibold tw-text-white tw-shadow-lg tw-shadow-violet-600/25 tw-transition active:tw-scale-[0.98] focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-fuchsia-400/50">
+                            {% ui 'pay_submit_whatsapp' %}
+                        </button>
+                        <a href="{% url 'core:home' %}" class="tw-inline-flex tw-min-h-[44px] tw-items-center tw-justify-center tw-rounded-xl tw-border tw-border-white/15 tw-bg-white/[0.04] tw-px-5 tw-py-3 tw-text-sm tw-font-semibold tw-text-white/85 tw-transition active:tw-scale-[0.98]">
+                            {% ui 'cancel' %}
+                        </a>
+                    </div>
+                </form>
+            </div>
+            <script>
+                (function () {
+                    var form = document.getElementById('vote-pay-form');
+                    var msgCopied = form ? form.getAttribute('data-msg-copied') : 'Copied!';
+                    var selPkg = document.getElementById('id_vote_package');
+                    var prev = document.getElementById('pkg-preview');
+                    var pkgPrefix = "{% filter escapejs %}{% ui 'pay_pkg_selected' %}{% endfilter %} ";
+                    if (selPkg && prev) {
+                        function syncPkg() {
+                            var opt = selPkg.options[selPkg.selectedIndex];
+                            prev.textContent = opt && opt.value ? (pkgPrefix + opt.text) : '';
+                        }
+                        selPkg.addEventListener('change', syncPkg);
+                        syncPkg();
+                    }
+                    var paySel = document.getElementById('id_payment_method');
+                    var wrap = document.getElementById('pay-preview-wrap');
+                    var lab = document.getElementById('pay-preview-label');
+                    var num = document.getElementById('pay-preview-number');
+                    var copyNum = document.getElementById('pay-copy-number-btn');
+                    function syncPay() {
+                        if (!paySel || !wrap || !lab || !num) return;
+                        var opt = paySel.options[paySel.selectedIndex];
+                        if (opt && opt.value) {
+                            lab.textContent = opt.getAttribute('data-label') || opt.text;
+                            num.textContent = opt.getAttribute('data-number') || '';
+                            wrap.classList.remove('tw-hidden');
+                        } else {
+                            wrap.classList.add('tw-hidden');
+                            lab.textContent = '';
+                            num.textContent = '';
+                        }
+                    }
+                    if (paySel) {
+                        paySel.addEventListener('change', syncPay);
+                        syncPay();
+                    }
+                    function copyText(text, btn) {
+                        var orig = btn.textContent;
+                        function done() {
+                            btn.textContent = msgCopied;
+                            setTimeout(function () { btn.textContent = orig; }, 1800);
+                        }
+                        if (navigator.clipboard && navigator.clipboard.writeText) {
+                            navigator.clipboard.writeText(text).then(done).catch(function () { window.prompt('Copy:', text); });
+                        } else { window.prompt('Copy:', text); }
+                    }
+                    document.querySelectorAll('.sm-copy-btn').forEach(function (btn) {
+                        btn.addEventListener('click', function () {
+                            var id = btn.getAttribute('data-copy-target');
+                            var el = id ? document.getElementById(id) : null;
+                            if (!el) return;
+                            copyText(el.textContent.trim(), btn);
+                        });
+                    });
+                    if (copyNum && num) {
+                        copyNum.addEventListener('click', function () {
+                            var t = num.textContent.trim();
+                            if (t) copyText(t, copyNum);
+                        });
+                    }
+                })();
+            </script>
+            {% endif %}
+        </div>
+    </div>
+
+    {% include 'includes/footer.html' %}
+</main>
+
+{% endblock %}

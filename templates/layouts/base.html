@@ -1,6 +1,6 @@
-{% load static %}
+{% load static ui_i18n %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ LANGUAGE_CODE }}">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -205,15 +205,15 @@
         <div class="modal-content" style="background: linear-gradient(150deg, rgba(20,13,38,0.98), rgba(10,7,20,0.98)); border: 1px solid rgba(255,255,255,.12); border-radius: 18px;">
             <div class="modal-header border-0 pb-0 align-items-start">
                 <div>
-                    <h6 class="modal-title mb-1 text-white" id="loginTitle">Artist Login</h6>
-                    <small class="text-white-50">Sign in to manage uploads and votes.</small>
+                    <h6 class="modal-title mb-1 text-white" id="loginTitle">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'login' %}{% else %}{% ui 'legacy_modal_login_title' %}{% endif %}</h6>
+                    <small class="text-white-50">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_login_tagline' %}{% else %}{% ui 'legacy_modal_login_sub' %}{% endif %}</small>
                 </div>
                 <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body pt-3" style="max-height: min(70vh, 700px); overflow-y: auto;">
-                <form action="{% url 'accounts:login' %}" class="mx-2 pb-3" id="login-form">
+                <form action="{% url 'accounts:login' %}" class="mx-2 pb-3 sf-no-submit-state" id="login-form" data-sf-busy-label="{% filter escapejs %}{% ui 'form_signing_in' %}{% endfilter %}">
                     <div class="form-group">
                         <label class="text-white-50 small mb-1">Email</label>
                         <input type="email" name="email" class="form-control" placeholder="you@example.com" style="background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.18); color: #fff;">
@@ -238,15 +238,15 @@
         <div class="modal-content" style="background: linear-gradient(150deg, rgba(20,13,38,0.98), rgba(10,7,20,0.98)); border: 1px solid rgba(255,255,255,.12); border-radius: 18px;">
             <div class="modal-header border-0 pb-0 align-items-start">
                 <div>
-                    <h6 class="modal-title mb-1 text-white" id="loginTitle">Register Artist</h6>
-                    <small class="text-white-50">Create your account and start publishing.</small>
+                    <h6 class="modal-title mb-1 text-white" id="loginTitle">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'register' %}{% else %}{% ui 'legacy_modal_register_title' %}{% endif %}</h6>
+                    <small class="text-white-50">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_register_tagline' %}{% else %}{% ui 'legacy_modal_register_sub' %}{% endif %}</small>
                 </div>
                 <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body pt-3" style="max-height: min(70vh, 700px); overflow-y: auto;">
-                <form action="{% url 'accounts:register' %}" class="mx-2 pb-3" id="register-form">
+                <form action="{% url 'accounts:register' %}" class="mx-2 pb-3 sf-no-submit-state" id="register-form" data-sf-busy-label="{% filter escapejs %}{% ui 'form_registering' %}{% endfilter %}">
                     <div class="form-group">
                         <label class="text-white-50 small mb-1">First name</label>
                         <input name="first_name" type="text" class="form-control" required placeholder="First name" style="background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.18); color: #fff;">
@@ -296,19 +296,19 @@
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <h6 class="modal-title text-center mb-3" id="loginTitle">Artist Login</h6>
+            <h6 class="modal-title text-center mb-3" id="loginTitle">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_confirm_vote' %}{% else %}{% ui 'confirm_vote' %}{% endif %}</h6>
             <div class="modal-body">
-                <form action="{% url 'core:vote' %}" class="mx-4 pb-5" id="login-form">
+                <form action="{% url 'core:vote' %}" class="mx-4 pb-5 sf-submit-state" id="email-vote-form" data-sf-busy-label="{% filter escapejs %}{% ui 'form_processing' %}{% endfilter %}">
                     <div class="form-group">
                         <input type="text" name="song_id" class="form-control" value="{{ id }}">
                     </div>
                   
                     <div class="form-group">
-                        <input type="email" name="email" class="form-control" placeholder="Enter email">
+                        <input type="email" name="email" class="form-control" placeholder="{% ui 'pay_email' %}">
                     </div>
                     
-                    <p id="login-error"></p>
-                    <button type="submit" class="btn btn-block btn-bold btn-air btn-info">Login</button>
+                    <p id="email-vote-error" class="small mb-2"></p>
+                    <button type="submit" class="btn btn-block btn-bold btn-air btn-info">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_send_confirmation' %}{% else %}{% ui 'send_confirmation' %}{% endif %}</button>
                 </form>
             </div>
         </div>

@@ -1,9 +1,9 @@
-{% load static ui_i18n %}
+{% load static ui_i18n number_format %}
 <aside class="tw-w-full tw-max-w-full tw-min-w-0 tw-rounded-3xl tw-border tw-border-white/[0.08] tw-bg-gradient-to-br tw-from-violet-950/90 tw-via-[#12081f]/85 tw-to-black/70 tw-backdrop-blur-xl tw-p-4 sm:tw-p-6 tw-shadow-[0_25px_80px_-20px_rgba(124,58,237,0.35)] lg:tw-sticky lg:tw-top-24" aria-labelledby="leaderboard-heading">
     <div class="tw-flex tw-items-start tw-justify-between tw-gap-3 tw-mb-4">
         <div class="tw-min-w-0 tw-pr-2">
             <h2 id="leaderboard-heading" class="tw-font-display tw-text-lg sm:tw-text-xl md:tw-text-2xl tw-font-bold tw-text-white tw-tracking-tight">
-                {% ui 'top_artists' %}
+                {% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_top_contestants' %}{% else %}{% ui 'top_artists' %}{% endif %}
             </h2>
         </div>
         <span class="tw-shrink-0 tw-inline-flex tw-h-9 tw-w-9 sm:tw-h-10 sm:tw-w-10 tw-items-center tw-justify-center tw-rounded-xl tw-bg-white/5 tw-border tw-border-white/10 tw-text-base" aria-hidden="true">🏆</span>
@@ -33,13 +33,13 @@
                 </p>
             </div>
 
-            <span class="tw-shrink-0 tw-tabular-nums tw-rounded-full tw-bg-fuchsia-500/15 tw-px-2.5 tw-py-1 tw-text-[11px] tw-font-semibold tw-text-fuchsia-200 tw-ring-1 tw-ring-fuchsia-400/25 tw-whitespace-nowrap">{{ row.vote_count }} {% ui 'votes_suffix' %}</span>
+            <span class="tw-shrink-0 tw-tabular-nums tw-rounded-full tw-bg-fuchsia-500/15 tw-px-2.5 tw-py-1 tw-text-[11px] tw-font-semibold tw-text-fuchsia-200 tw-ring-1 tw-ring-fuchsia-400/25 tw-whitespace-nowrap" title="{{ row.vote_count }} {% ui 'votes_suffix' %}">{{ row.vote_count|compact_count }} {% ui 'votes_suffix' %}</span>
         </li>
         {% endfor %}
     </ol>
     {% else %}
     <div class="tw-rounded-2xl tw-border tw-border-dashed tw-border-white/15 tw-bg-black/20 tw-py-10 tw-px-4 tw-text-center">
-        <p class="tw-font-sans tw-text-sm tw-text-white/50 tw-leading-relaxed">{% ui 'no_rankings_yet' %}</p>
+        <p class="tw-font-sans tw-text-sm tw-text-white/50 tw-leading-relaxed">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_no_rankings_yet' %}{% else %}{% ui 'no_rankings_yet' %}{% endif %}</p>
     </div>
     {% endif %}
 </aside>

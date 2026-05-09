@@ -1,4 +1,4 @@
-{% load static ui_i18n humanize %}
+{% load static ui_i18n humanize number_format %}
 {# mode: "dashboard" (hide / reset / unhide + edit votes) | "publish_list" (publish / reject → status) #}
 <article class="yt-track-card tw-group tw-relative tw-min-w-0">
     <span class="track-vote-pill tw-pointer-events-none tw-absolute tw-right-2 tw-top-2 tw-z-20 tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-lg tw-border tw-border-white/[0.1] tw-px-2 tw-py-1 tw-backdrop-blur-md sm:tw-right-2.5 sm:tw-top-2.5 sm:tw-rounded-xl sm:tw-px-2.5 sm:tw-py-1.5" title="{{ song.votes }} {% ui 'votes_suffix' %}">
@@ -7,7 +7,7 @@
                 <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
         </span>
-        <span class="track-vote-count tw-text-lg tw-font-semibold tw-tabular-nums tw-tracking-tight tw-text-white sm:tw-text-xl">{{ song.votes }}</span>
+        <span class="track-vote-count tw-text-lg tw-font-semibold tw-tabular-nums tw-tracking-tight tw-text-white sm:tw-text-xl">{{ song.votes|compact_count }}</span>
     </span>
     <div class="yt-thumb-wrap tw-relative tw-aspect-video tw-overflow-hidden tw-rounded-xl tw-bg-zinc-950 tw-shadow-[0_4px_24px_-8px_rgba(0,0,0,0.75)] tw-ring-1 tw-ring-white/[0.06]">
         {% if song.song_display_url %}
@@ -51,19 +51,19 @@
             {% if mode == 'dashboard' %}
             <div class="tw-mt-2 tw-flex tw-flex-wrap tw-gap-2">
                 {% if song.status == "4" %}
-                <form method="post" action="{% url 'core:unhide_song' song.id %}" class="tw-inline">
+                <form method="post" action="{% url 'core:unhide_song' song.id %}" class="tw-inline sf-submit-state" data-sf-busy-label="{% filter escapejs %}{% ui 'form_processing' %}{% endfilter %}">
                     {% csrf_token %}
                     <input type="hidden" name="next" value="dashboard">
                     <button type="submit" class="tw-rounded-lg tw-border tw-border-emerald-400/40 tw-bg-emerald-500/15 tw-px-3 tw-py-1.5 tw-text-[11px] tw-font-semibold tw-text-emerald-100 hover:tw-bg-emerald-500/25">{% ui 'unhide' %}</button>
                 </form>
                 {% else %}
-                <form method="post" action="{% url 'core:hide_song' song.id %}" class="tw-inline">
+                <form method="post" action="{% url 'core:hide_song' song.id %}" class="tw-inline sf-submit-state" data-sf-busy-label="{% filter escapejs %}{% ui 'form_processing' %}{% endfilter %}">
                     {% csrf_token %}
                     <input type="hidden" name="next" value="dashboard">
                     <button type="submit" class="tw-rounded-lg tw-border tw-border-white/18 tw-bg-white/[0.06] tw-px-3 tw-py-1.5 tw-text-[11px] tw-font-semibold tw-text-white/85 hover:tw-bg-white/12">{% ui 'hide' %}</button>
                 </form>
                 {% endif %}
-                <form method="post" action="{% url 'core:reset_song_votes' song.id %}" class="tw-inline" data-confirm-reset="{% filter escapejs %}{% ui 'reset_votes_warning' %}{% endfilter %}" onsubmit="return window.confirm(this.getAttribute('data-confirm-reset'));">
+                <form method="post" action="{% url 'core:reset_song_votes' song.id %}" class="tw-inline sf-submit-state" data-sf-busy-label="{% filter escapejs %}{% ui 'form_processing' %}{% endfilter %}" data-confirm-reset="{% filter escapejs %}{% ui 'reset_votes_warning' %}{% endfilter %}" onsubmit="return window.confirm(this.getAttribute('data-confirm-reset'));">
                     {% csrf_token %}
                     <input type="hidden" name="next" value="dashboard">
                     <input type="hidden" name="confirm_reset" value="yes">
@@ -73,11 +73,11 @@
             </div>
             {% elif mode == 'publish_list' %}
             <div class="tw-mt-2 tw-flex tw-flex-wrap tw-gap-2">
-                <form method="post" action="{% url 'core:catalog_publish_song' song.id %}" class="tw-inline">
+                <form method="post" action="{% url 'core:catalog_publish_song' song.id %}" class="tw-inline sf-submit-state" data-sf-busy-label="{% filter escapejs %}{% ui 'form_processing' %}{% endfilter %}">
                     {% csrf_token %}
                     <button type="submit" class="tw-rounded-lg tw-border tw-border-emerald-400/40 tw-bg-emerald-500/15 tw-px-3 tw-py-1.5 tw-text-[11px] tw-font-semibold tw-text-emerald-100 hover:tw-bg-emerald-500/25">{% ui 'publish' %}</button>
                 </form>
-                <form method="post" action="{% url 'core:catalog_reject_song' song.id %}" class="tw-inline">
+                <form method="post" action="{% url 'core:catalog_reject_song' song.id %}" class="tw-inline sf-submit-state" data-sf-busy-label="{% filter escapejs %}{% ui 'form_processing' %}{% endfilter %}">
                     {% csrf_token %}
                     <button type="submit" class="tw-rounded-lg tw-border tw-border-rose-400/40 tw-bg-rose-500/15 tw-px-3 tw-py-1.5 tw-text-[11px] tw-font-semibold tw-text-rose-100 hover:tw-bg-rose-500/25">{% ui 'reject' %}</button>
                 </form>

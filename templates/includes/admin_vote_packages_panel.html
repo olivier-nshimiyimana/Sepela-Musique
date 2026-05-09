@@ -1,0 +1,89 @@
+{% load price_display ui_i18n %}
+<section class="tw-rounded-3xl tw-border tw-border-white/[0.08] tw-bg-white/[0.03] tw-backdrop-blur-md tw-p-5 sm:tw-p-6 tw-mb-8 tw-font-sans">
+    <h2 class="tw-font-display tw-text-xl tw-font-semibold tw-text-white tw-mb-2">Vote packages (checkout)</h2>
+    <p class="tw-text-xs tw-text-white/45 tw-mb-6">Buyers pick one package on the paid vote page: votes + price + currency. Inactive packages stay hidden.</p>
+
+    {% if vote_packages %}
+    <div class="tw-space-y-6 tw-mb-8">
+        {% for pkg in vote_packages %}
+        <div class="tw-rounded-xl tw-border tw-border-white/[0.08] tw-bg-black/20 tw-p-4">
+            <form method="post" action="{% url 'core:app_administration' %}" class="tw-grid tw-grid-cols-1 md:tw-grid-cols-12 tw-gap-3 tw-items-end sf-submit-state" data-sf-busy-label="{% filter escapejs %}{% ui 'form_processing' %}{% endfilter %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="update_vote_package">
+                <input type="hidden" name="package_id" value="{{ pkg.pk }}">
+                <div class="md:tw-col-span-3">
+                    <label class="tw-block tw-text-[10px] tw-font-semibold tw-text-white/45 tw-uppercase tw-mb-1">Title</label>
+                    <input type="text" name="vp_title" value="{{ pkg.title }}" required class="tw-w-full tw-rounded-lg tw-border tw-border-white/15 tw-bg-black/30 tw-px-3 tw-py-2 tw-text-sm tw-text-white">
+                </div>
+                <div class="md:tw-col-span-2">
+                    <label class="tw-block tw-text-[10px] tw-font-semibold tw-text-white/45 tw-uppercase tw-mb-1">Votes</label>
+                    <input type="number" name="vp_vote_count" value="{{ pkg.vote_count }}" min="1" required class="tw-w-full tw-rounded-lg tw-border tw-border-white/15 tw-bg-black/30 tw-px-3 tw-py-2 tw-text-sm tw-text-white">
+                </div>
+                <div class="md:tw-col-span-2">
+                    <label class="tw-block tw-text-[10px] tw-font-semibold tw-text-white/45 tw-uppercase tw-mb-1">Price</label>
+                    <input type="text" name="vp_price" value="{{ pkg.price|price_plain }}" required class="tw-w-full tw-rounded-lg tw-border tw-border-white/15 tw-bg-black/30 tw-px-3 tw-py-2 tw-text-sm tw-text-white">
+                </div>
+                <div class="md:tw-col-span-2">
+                    <label class="tw-block tw-text-[10px] tw-font-semibold tw-text-white/45 tw-uppercase tw-mb-1">Currency</label>
+                    <input type="text" name="vp_currency" value="{{ pkg.currency }}" maxlength="8" class="tw-w-full tw-rounded-lg tw-border tw-border-white/15 tw-bg-black/30 tw-px-3 tw-py-2 tw-text-sm tw-text-white">
+                </div>
+                <div class="md:tw-col-span-1">
+                    <label class="tw-block tw-text-[10px] tw-font-semibold tw-text-white/45 tw-uppercase tw-mb-1">Sort</label>
+                    <input type="number" name="vp_sort_order" value="{{ pkg.sort_order }}" min="0" class="tw-w-full tw-rounded-lg tw-border tw-border-white/15 tw-bg-black/30 tw-px-3 tw-py-2 tw-text-sm tw-text-white">
+                </div>
+                <div class="md:tw-col-span-2 tw-flex tw-flex-wrap tw-gap-2 tw-items-center">
+                    <input type="hidden" name="vp_is_active" value="0">
+                    <label class="tw-inline-flex tw-items-center tw-gap-2 tw-text-xs tw-text-white/65 tw-whitespace-nowrap">
+                        <input type="checkbox" name="vp_is_active" value="1" {% if pkg.is_active %}checked{% endif %} class="tw-rounded tw-border-white/25 tw-bg-black/40 tw-text-emerald-500">
+                        Active
+                    </label>
+                    <button type="submit" class="tw-rounded-lg tw-bg-violet-600 hover:tw-brightness-110 tw-px-3 tw-py-2 tw-text-xs tw-font-semibold tw-text-white">Save</button>
+                </div>
+            </form>
+            <form method="post" action="{% url 'core:app_administration' %}" class="tw-mt-3 tw-inline sf-submit-state" data-sf-busy-label="{% filter escapejs %}{% ui 'form_processing' %}{% endfilter %}" onsubmit="return confirm('Delete this package?');">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="delete_vote_package">
+                <input type="hidden" name="package_id" value="{{ pkg.pk }}">
+                <button type="submit" class="tw-text-xs tw-font-semibold tw-text-rose-300 hover:tw-text-rose-200">Delete</button>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="tw-rounded-xl tw-border tw-border-dashed tw-border-white/15 tw-bg-black/15 tw-p-4">
+        <h3 class="tw-text-sm tw-font-semibold tw-text-white tw-mb-3">Add package</h3>
+        <form method="post" action="{% url 'core:app_administration' %}" class="tw-grid tw-grid-cols-1 md:tw-grid-cols-12 tw-gap-3 tw-items-end sf-submit-state" data-sf-busy-label="{% filter escapejs %}{% ui 'form_processing' %}{% endfilter %}">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add_vote_package">
+            <div class="md:tw-col-span-3">
+                <label class="tw-block tw-text-[10px] tw-font-semibold tw-text-white/45 tw-uppercase tw-mb-1">Title</label>
+                <input type="text" name="vp_title" placeholder="e.g. 100 votes" class="tw-w-full tw-rounded-lg tw-border tw-border-white/15 tw-bg-black/30 tw-px-3 tw-py-2 tw-text-sm tw-text-white">
+            </div>
+            <div class="md:tw-col-span-2">
+                <label class="tw-block tw-text-[10px] tw-font-semibold tw-text-white/45 tw-uppercase tw-mb-1">Votes</label>
+                <input type="number" name="vp_vote_count" value="100" min="1" class="tw-w-full tw-rounded-lg tw-border tw-border-white/15 tw-bg-black/30 tw-px-3 tw-py-2 tw-text-sm tw-text-white">
+            </div>
+            <div class="md:tw-col-span-2">
+                <label class="tw-block tw-text-[10px] tw-font-semibold tw-text-white/45 tw-uppercase tw-mb-1">Price</label>
+                <input type="text" name="vp_price" placeholder="5000" class="tw-w-full tw-rounded-lg tw-border tw-border-white/15 tw-bg-black/30 tw-px-3 tw-py-2 tw-text-sm tw-text-white">
+            </div>
+            <div class="md:tw-col-span-2">
+                <label class="tw-block tw-text-[10px] tw-font-semibold tw-text-white/45 tw-uppercase tw-mb-1">Currency</label>
+                <input type="text" name="vp_currency" value="CDF" maxlength="8" class="tw-w-full tw-rounded-lg tw-border tw-border-white/15 tw-bg-black/30 tw-px-3 tw-py-2 tw-text-sm tw-text-white">
+            </div>
+            <div class="md:tw-col-span-1">
+                <label class="tw-block tw-text-[10px] tw-font-semibold tw-text-white/45 tw-uppercase tw-mb-1">Sort</label>
+                <input type="number" name="vp_sort_order" value="0" min="0" class="tw-w-full tw-rounded-lg tw-border tw-border-white/15 tw-bg-black/30 tw-px-3 tw-py-2 tw-text-sm tw-text-white">
+            </div>
+            <div class="md:tw-col-span-2 tw-flex tw-flex-wrap tw-gap-2 tw-items-center">
+                <input type="hidden" name="vp_is_active" value="0">
+                <label class="tw-inline-flex tw-items-center tw-gap-2 tw-text-xs tw-text-white/65 tw-whitespace-nowrap">
+                    <input type="checkbox" name="vp_is_active" value="1" checked class="tw-rounded tw-border-white/25 tw-bg-black/40 tw-text-emerald-500">
+                    Active
+                </label>
+                <button type="submit" class="tw-rounded-lg tw-bg-gradient-to-r tw-from-emerald-600 tw-to-teal-600 tw-px-4 tw-py-2 tw-text-xs tw-font-semibold tw-text-white">Add</button>
+            </div>
+        </form>
+    </div>
+</section>

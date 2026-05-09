@@ -12,12 +12,12 @@
         <div class="premium-content tw-max-w-2xl tw-mx-auto tw-px-4 sm:tw-px-6">
             <header class="tw-text-center tw-mb-8">
                 <p class="tw-font-sans tw-text-xs tw-font-semibold tw-tracking-[0.2em] tw-text-fuchsia-400/90 tw-uppercase tw-mb-2">{% ui 'register' %}</p>
-                <h1 class="tw-font-display tw-text-2xl sm:tw-text-3xl tw-font-bold tw-text-white tw-tracking-tight">Create your artist account</h1>
-                <p class="tw-mt-3 tw-text-sm tw-text-white/50 tw-font-sans">Join the competition and start publishing your tracks.</p>
+                <h1 class="tw-font-display tw-text-2xl sm:tw-text-3xl tw-font-bold tw-text-white tw-tracking-tight">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_register_title' %}{% else %}{% ui 'register_title_art' %}{% endif %}</h1>
+                <p class="tw-mt-3 tw-text-sm tw-text-white/50 tw-font-sans">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_register_tagline' %}{% else %}{% ui 'register_tagline_art' %}{% endif %}</p>
             </header>
 
             <div class="tw-rounded-3xl tw-border tw-border-white/[0.08] tw-bg-white/[0.04] tw-backdrop-blur-xl tw-p-6 sm:tw-p-8 tw-shadow-[0_25px_80px_-20px_rgba(124,58,237,0.35)]">
-                <form action="{% url 'accounts:register' %}" method="post" class="tw-space-y-5 tw-font-sans">
+                <form action="{% url 'accounts:register' %}" method="post" class="tw-space-y-5 tw-font-sans sf-submit-state" data-sf-busy-label="{% filter escapejs %}{% ui 'form_registering' %}{% endfilter %}">
                     {% csrf_token %}
                     <div class="tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 tw-gap-4">
                         <div>

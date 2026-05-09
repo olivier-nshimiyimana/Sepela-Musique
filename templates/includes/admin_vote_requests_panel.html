@@ -1,0 +1,58 @@
+{% load ui_i18n %}
+{# Paid VoteRequest moderation — Administration dashboard #}
+<section class="tw-rounded-3xl tw-border tw-border-white/[0.08] tw-bg-white/[0.03] tw-backdrop-blur-md tw-p-5 sm:tw-p-6 tw-mb-8 tw-font-sans">
+    <div class="tw-flex tw-flex-col sm:tw-flex-row sm:tw-items-start sm:tw-justify-between tw-gap-4 tw-mb-5">
+        <div>
+            <h2 class="tw-font-display tw-text-xl tw-font-semibold tw-text-white tw-tracking-tight">Paid vote packages</h2>
+            <p class="tw-mt-1 tw-text-xs tw-text-white/45">Approve or reject WhatsApp payment requests. Totals use the approved <strong class="tw-text-white/55">vote count</strong> sum.</p>
+        </div>
+        <nav class="tw-flex tw-flex-wrap tw-gap-2" aria-label="Filter vote requests">
+            {% with base=request.path %}
+            <a href="{{ base }}?vr_status=pending" class="tw-rounded-lg tw-px-3 tw-py-1.5 tw-text-xs tw-font-semibold tw-border {% if vote_request_status_filter == 'pending' %}tw-border-emerald-400/50 tw-bg-emerald-500/15 tw-text-emerald-100{% else %}tw-border-white/15 tw-bg-black/20 tw-text-white/65 hover:tw-bg-white/[0.06]{% endif %}">Pending</a>
+            <a href="{{ base }}?vr_status=approved" class="tw-rounded-lg tw-px-3 tw-py-1.5 tw-text-xs tw-font-semibold tw-border {% if vote_request_status_filter == 'approved' %}tw-border-emerald-400/50 tw-bg-emerald-500/15 tw-text-emerald-100{% else %}tw-border-white/15 tw-bg-black/20 tw-text-white/65 hover:tw-bg-white/[0.06]{% endif %}">Approved</a>
+            <a href="{{ base }}?vr_status=rejected" class="tw-rounded-lg tw-px-3 tw-py-1.5 tw-text-xs tw-font-semibold tw-border {% if vote_request_status_filter == 'rejected' %}tw-border-emerald-400/50 tw-bg-emerald-500/15 tw-text-emerald-100{% else %}tw-border-white/15 tw-bg-black/20 tw-text-white/65 hover:tw-bg-white/[0.06]{% endif %}">Rejected</a>
+            <a href="{{ base }}?vr_status=all" class="tw-rounded-lg tw-px-3 tw-py-1.5 tw-text-xs tw-font-semibold tw-border {% if vote_request_status_filter == 'all' %}tw-border-emerald-400/50 tw-bg-emerald-500/15 tw-text-emerald-100{% else %}tw-border-white/15 tw-bg-black/20 tw-text-white/65 hover:tw-bg-white/[0.06]{% endif %}">All</a>
+            {% endwith %}
+        </nav>
+    </div>
+
+    {% if vote_requests %}
+        {% if vote_requests_actionable %}
+        <form method="post" action="{% url 'core:app_administration' %}" class="tw-space-y-4 sf-submit-state" data-sf-busy-label="{% filter escapejs %}{% ui 'form_processing' %}{% endfilter %}">
+            {% csrf_token %}
+            <input type="hidden" name="return_path" value="{{ request.path }}">
+            <input type="hidden" name="return_vr_status" value="{{ vote_request_status_filter }}">
+
+            <div class="tw-flex tw-flex-wrap tw-items-center tw-gap-3">
+                <button type="submit" name="action" value="approve_vote_requests" class="tw-inline-flex tw-items-center tw-rounded-xl tw-bg-gradient-to-r tw-from-emerald-600 tw-to-teal-600 tw-px-4 tw-py-2.5 tw-text-sm tw-font-semibold tw-text-white hover:tw-brightness-110">
+                    Approve selected
+                </button>
+                <button type="submit" name="action" value="reject_vote_requests" class="tw-inline-flex tw-items-center tw-rounded-xl tw-border tw-border-rose-400/40 tw-bg-rose-500/12 tw-px-4 tw-py-2.5 tw-text-sm tw-font-semibold tw-text-rose-100 hover:tw-bg-rose-500/22" onclick="return confirm('Reject selected pending packages?');">
+                    Reject selected
+                </button>
+                <label class="tw-inline-flex tw-items-center tw-gap-2 tw-text-xs tw-text-white/55 tw-ml-auto tw-cursor-pointer">
+                    <input type="checkbox" id="vr-select-all" class="tw-rounded tw-border-white/25 tw-bg-black/40 tw-text-emerald-500 focus:tw-ring-emerald-500/40">
+                    Select pending on page
+                </label>
+            </div>
+
+            {% include 'includes/admin_vote_requests_table.html' with actionable=vote_requests_actionable %}
+        </form>
+        <script>
+            (function () {
+                var master = document.getElementById('vr-select-all');
+                if (!master) return;
+                master.addEventListener('change', function () {
+                    document.querySelectorAll('.vr-cb').forEach(function (cb) { cb.checked = master.checked; });
+                });
+            })();
+        </script>
+        {% else %}
+        {% include 'includes/admin_vote_requests_table.html' with actionable=vote_requests_actionable %}
+        {% endif %}
+    {% else %}
+    <div class="tw-rounded-xl tw-border tw-border-dashed tw-border-white/15 tw-bg-white/[0.02] tw-py-12 tw-px-6 tw-text-center tw-text-sm tw-text-white/45">
+        No vote package requests in this view.
+    </div>
+    {% endif %}
+</section>

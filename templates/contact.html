@@ -1,5 +1,5 @@
 {% extends 'layouts/base.html' %}
-{% load static %}
+{% load static ui_i18n %}
 
 {% block content %}
 
@@ -18,7 +18,7 @@
 			Please write your name, email address and a message below if you have any questions.
 			One of our staff members will be happy to contact you directly and answer your questions as soon as possible. 
 		</p>
-		<form method="post">
+		<form method="post" class="sf-submit-state" data-sf-busy-label="{% filter escapejs %}{% ui 'form_processing' %}{% endfilter %}">
         {% csrf_token %}
             {{form.as_p}}
             <button type="submit">Submit</button>

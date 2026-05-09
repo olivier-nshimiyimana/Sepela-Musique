@@ -110,6 +110,14 @@
   #footer .sf-meta-row a:hover {
     color: #a5f3fc;
   }
+  #footer .sf-mk-footline {
+    margin: 10px auto 0;
+    max-width: 36rem;
+    text-align: center;
+    font-size: 11px;
+    line-height: 1.45;
+    color: rgba(200, 205, 230, 0.55);
+  }
   @media (min-width: 641px) {
     #footer.smart-footer {
       margin-top: 36px !important;
@@ -194,5 +202,8 @@
             <span class="sf-sep" aria-hidden="true">·</span>
             <a href="{% url 'core:about' %}">{% ui 'about_us' %}</a>
         </div>
+        {% if SITE_MODE == 'MISS_KATANGA' %}
+        <p class="sf-mk-footline">{% ui 'mk_footer_line' %}</p>
+        {% endif %}
     </div>
 </footer>

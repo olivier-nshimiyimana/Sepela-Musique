@@ -14,6 +14,8 @@ import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 from datetime import timedelta
+
+from django.core.exceptions import ImproperlyConfigured
 try:
     import dj_database_url
 except ModuleNotFoundError:
@@ -152,12 +154,15 @@ WSGI_APPLICATION = 'music.wsgi.application'
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
 _database_url = os.environ.get('DATABASE_URL', '').strip()
+_db_scheme = _database_url.split(':', 1)[0].lower() if _database_url else ''
+_default_pg_ssl = _db_scheme in ('postgres', 'postgresql')
 if _database_url and dj_database_url is not None:
     DATABASES = {
         'default': dj_database_url.parse(
             _database_url,
             conn_max_age=int(os.environ.get('DB_CONN_MAX_AGE', '600')),
-            ssl_require=not DEBUG,
+            # Neon and most hosted Postgres require TLS even when DEBUG=True locally.
+            ssl_require=_env_bool('DATABASE_SSL_REQUIRE', default=_default_pg_ssl),
         )
     }
 elif _database_url and dj_database_url is None:
@@ -229,6 +234,53 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+# User-uploaded files (avatars, songs, thumbnails, payment proofs) must not rely on
+# the app server's local disk when using hosted Postgres (e.g. Neon): use S3-compatible
+# object storage so every dyno and every URL resolve to the same bytes.
+# Enable by setting AWS_STORAGE_BUCKET_NAME (recommended) or USE_S3_MEDIA=true.
+_s3_bucket = os.environ.get('AWS_STORAGE_BUCKET_NAME', '').strip()
+USE_S3_MEDIA = _env_bool('USE_S3_MEDIA', default=bool(_s3_bucket))
+if USE_S3_MEDIA and not _s3_bucket:
+    raise ImproperlyConfigured(
+        'USE_S3_MEDIA is enabled but AWS_STORAGE_BUCKET_NAME is empty. '
+        'Neon (and similar) only store paths in Postgres; set a bucket for binary files.',
+    )
+if USE_S3_MEDIA:
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', '').strip()
+    AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', '').strip()
+    AWS_STORAGE_BUCKET_NAME = _s3_bucket
+    AWS_S3_REGION_NAME = os.environ.get('AWS_S3_REGION_NAME', 'us-east-1').strip()
+    _endpoint = os.environ.get('AWS_S3_ENDPOINT_URL', '').strip()
+    AWS_S3_ENDPOINT_URL = _endpoint or None
+    _addressing = os.environ.get('AWS_S3_ADDRESSING_STYLE', 'virtual').strip()
+    if _addressing in ('virtual', 'path', 'auto'):
+        AWS_S3_ADDRESSING_STYLE = _addressing
+    AWS_S3_OBJECT_PARAMETERS = {
+        'CacheControl': 'max-age=86400',
+    }
+    # Buckets with "Bucket owner enforced" do not allow object ACLs.
+    AWS_DEFAULT_ACL = None
+    AWS_QUERYSTRING_AUTH = _env_bool('AWS_QUERYSTRING_AUTH', default=False)
+    _custom_domain = os.environ.get('AWS_S3_CUSTOM_DOMAIN', '').strip().strip('/')
+    if _custom_domain:
+        AWS_S3_CUSTOM_DOMAIN = _custom_domain
+    _public_media_url = os.environ.get('AWS_S3_PUBLIC_MEDIA_URL', '').strip().rstrip('/')
+    if _public_media_url:
+        MEDIA_URL = _public_media_url + '/'
+    elif _custom_domain:
+        MEDIA_URL = 'https://%s/' % _custom_domain
+    elif _endpoint:
+        # R2 / MinIO / custom S3: MEDIA_URL aligns with how browsers resolve object keys.
+        MEDIA_URL = '%s/%s/' % (_endpoint.rstrip('/'), AWS_STORAGE_BUCKET_NAME)
+    elif AWS_S3_REGION_NAME == 'us-east-1':
+        MEDIA_URL = 'https://%s.s3.amazonaws.com/' % AWS_STORAGE_BUCKET_NAME
+    else:
+        MEDIA_URL = 'https://%s.s3.%s.amazonaws.com/' % (
+            AWS_STORAGE_BUCKET_NAME,
+            AWS_S3_REGION_NAME,
+        )
+
 AUTH_USER_MODEL = "accounts.User"
 
 REST_FRAMEWORK = {
@@ -270,3 +322,9 @@ EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'true').lower() in ('1', 'true',
 EMAIL_TIMEOUT = int(os.environ.get('EMAIL_TIMEOUT', '20'))
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER or 'noreply@localhost')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Optional override for paid-vote WhatsApp (`wa.me`). Prefer configuring the number
+# on Administration → Site settings (`SiteSettings.whatsapp_payments_phone`).
+WHATSAPP_PAYMENTS_PHONE = ''.join(
+    c for c in os.environ.get('WHATSAPP_PAYMENTS_PHONE', '').strip() if c.isdigit()
+)

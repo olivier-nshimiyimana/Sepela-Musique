@@ -1,5 +1,5 @@
 {% extends 'layouts/base.html' %}
-{% load static %}
+{% load static ui_i18n %}
 
 {% block stylesheets %}
 {% include 'includes/tw_theme_setup.html' %}
@@ -18,9 +18,9 @@
 
             <header class="tw-text-center tw-mb-12 tw-opacity-0 tw-animate-fade-up" style="animation-fill-mode: forwards;">
                 <p class="tw-font-sans tw-text-xs tw-font-semibold tw-tracking-[0.2em] tw-text-fuchsia-400/90 tw-uppercase tw-mb-3">{{ site_settings.site_title|default:"Sepela Musique" }}</p>
-                <h1 class="tw-font-display tw-text-3xl sm:tw-text-4xl tw-font-bold tw-text-white tw-tracking-tight">Contact administration</h1>
+                <h1 class="tw-font-display tw-text-3xl sm:tw-text-4xl tw-font-bold tw-text-white tw-tracking-tight">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_about_contact_title' %}{% else %}{% ui 'contact_admin_title' %}{% endif %}</h1>
                 <p class="tw-mt-4 tw-max-w-2xl tw-mx-auto tw-text-base tw-text-white/50 tw-font-sans tw-leading-relaxed">
-                    Reach the team — studio, partnerships, or listener support.
+                    {% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_about_contact_subtitle' %}{% else %}{% ui 'contact_admin_subtitle' %}{% endif %}
                 </p>
             </header>
 
@@ -49,9 +49,9 @@
             </div>
 
             <div class="tw-rounded-3xl tw-border tw-border-white/[0.08] tw-bg-white/[0.03] tw-backdrop-blur-xl tw-p-6 sm:tw-p-10 tw-max-w-3xl tw-mx-auto tw-shadow-[0_25px_80px_-25px_rgba(0,0,0,0.6)]">
-                <h2 class="tw-font-display tw-text-xl tw-font-bold tw-text-white tw-text-center tw-mb-8">Send a message</h2>
+                <h2 class="tw-font-display tw-text-xl tw-font-bold tw-text-white tw-text-center tw-mb-8">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_about_send_title' %}{% else %}{% ui 'contact_form_heading' %}{% endif %}</h2>
 
-                <form method="POST" id="contactForm" action="{% url 'core:about' %}" class="tw-space-y-5 tw-font-sans">
+                <form method="POST" id="contactForm" action="{% url 'core:about' %}" class="tw-space-y-5 tw-font-sans sf-submit-state" data-sf-busy-label="{% filter escapejs %}{% ui 'form_processing' %}{% endfilter %}">
                     {% csrf_token %}
                     {% for field in form %}
                     <div>
@@ -67,7 +67,7 @@
 
                     <div class="tw-pt-2">
                         <button type="submit" class="tw-w-full sm:tw-w-auto tw-inline-flex tw-items-center tw-justify-center tw-rounded-xl tw-bg-gradient-to-r tw-from-violet-600 tw-to-fuchsia-600 tw-px-8 tw-py-3.5 tw-text-sm tw-font-semibold tw-text-white tw-shadow-lg tw-transition hover:tw-brightness-110 focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-fuchsia-400/50">
-                            Send message
+                            {% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_about_send_btn' %}{% else %}{% ui 'contact_send_button' %}{% endif %}
                         </button>
                     </div>
                 </form>

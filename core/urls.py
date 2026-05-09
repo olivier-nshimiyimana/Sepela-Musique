@@ -25,6 +25,7 @@ urlpatterns = [
     path('song_view/publish_status/<int:id>', catalog_publish_song, name='catalog_publish_song'),
     path('song_view/reject_status/<int:id>', catalog_reject_song, name='catalog_reject_song'),
     path('vote_view/<int:id>', vote_view, name='vote_view'),
+    path('vote/paid', paid_vote_request_view, name='paid_vote_request'),
     path('accept/<int:id>', accept_video, name='accept_video'),
     path('publish/<int:id>', publish_video, name='publish_video'),
     path('reject/<int:id>', reject_video, name='reject_video'),
@@ -35,5 +36,6 @@ urlpatterns = [
 
     
 ]
-if settings.DEBUG:
+# Local disk media only in DEBUG and when not using remote object storage.
+if settings.DEBUG and not getattr(settings, 'USE_S3_MEDIA', False):
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

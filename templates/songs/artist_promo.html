@@ -1,5 +1,5 @@
 {% extends 'layouts/base.html' %}
-{% load static %}
+{% load static ui_i18n %}
 
 {% block stylesheets %}
 {% include 'includes/tw_theme_setup.html' %}
@@ -16,10 +16,10 @@
         <div class="premium-content tw-max-w-xl tw-mx-auto tw-px-4 sm:tw-px-6">
 
             <header class="tw-mb-8 tw-opacity-0 tw-animate-fade-up" style="animation-fill-mode: forwards;">
-                <p class="tw-font-sans tw-text-xs tw-font-semibold tw-tracking-[0.2em] tw-text-fuchsia-400/90 tw-uppercase tw-mb-2">Artist profile</p>
-                <h1 class="tw-font-display tw-text-2xl sm:tw-text-3xl tw-font-bold tw-text-white">Leaderboard promo</h1>
+                <p class="tw-font-sans tw-text-xs tw-font-semibold tw-tracking-[0.2em] tw-text-fuchsia-400/90 tw-uppercase tw-mb-2">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_artist_promo_kicker' %}{% else %}{% ui 'artist_promo_kicker' %}{% endif %}</p>
+                <h1 class="tw-font-display tw-text-2xl sm:tw-text-3xl tw-font-bold tw-text-white">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_artist_promo_page_title' %}{% else %}{% ui 'artist_promo_title' %}{% endif %}</h1>
                 <p class="tw-mt-3 tw-text-sm tw-text-white/50 tw-font-sans tw-leading-relaxed">
-                    Upload <strong class="tw-text-white/80">one thumbnail image</strong> or <strong class="tw-text-white/80">one short video</strong> (MP4, WebM, MOV, M4V). Only one type is shown on the leaderboard — uploading replaces the other.
+                    {% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_artist_promo_blurb' %}{% else %}{% ui 'artist_promo_blurb' %}{% endif %}
                 </p>
             </header>
 
@@ -39,43 +39,43 @@
                 <p class="tw-text-sm tw-text-white/40 tw-font-sans">No promo media yet — your row will use a neutral placeholder until you upload.</p>
                 {% endif %}
 
-                <form method="post" enctype="multipart/form-data" class="tw-space-y-6 tw-font-sans">
+                <form method="post" enctype="multipart/form-data" class="tw-space-y-6 tw-font-sans sf-submit-state" data-sf-busy-label="{% filter escapejs %}{% ui 'form_processing' %}{% endfilter %}">
                     {% csrf_token %}
                     <fieldset class="tw-space-y-4">
-                        <legend class="tw-text-sm tw-font-semibold tw-text-white tw-mb-2">Choose type</legend>
+                        <legend class="tw-text-sm tw-font-semibold tw-text-white tw-mb-2">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_artist_promo_type' %}{% else %}Choose type{% endif %}</legend>
                         <label class="tw-flex tw-items-center tw-gap-3 tw-cursor-pointer tw-rounded-xl tw-border tw-border-white/10 tw-bg-black/20 tw-px-4 tw-py-3 has-[:checked]:tw-border-violet-400/50">
                             <input type="radio" name="promo_kind" value="image" class="tw-accent-violet-500" checked>
-                            <span class="tw-text-sm tw-text-white/90">Thumbnail image</span>
+                            <span class="tw-text-sm tw-text-white/90">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_artist_promo_image' %}{% else %}Thumbnail image{% endif %}</span>
                         </label>
                         <label class="tw-flex tw-items-center tw-gap-3 tw-cursor-pointer tw-rounded-xl tw-border tw-border-white/10 tw-bg-black/20 tw-px-4 tw-py-3 has-[:checked]:tw-border-violet-400/50">
                             <input type="radio" name="promo_kind" value="video" class="tw-accent-violet-500">
-                            <span class="tw-text-sm tw-text-white/90">Short promo video</span>
+                            <span class="tw-text-sm tw-text-white/90">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_artist_promo_video' %}{% else %}Short promo video{% endif %}</span>
                         </label>
                     </fieldset>
 
                     <div class="tw-space-y-3">
-                        <label class="tw-block tw-text-xs tw-font-semibold tw-tracking-wide tw-text-white/50 tw-uppercase">Image file</label>
+                        <label class="tw-block tw-text-xs tw-font-semibold tw-tracking-wide tw-text-white/50 tw-uppercase">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_artist_promo_image' %}{% else %}Image file{% endif %}</label>
                         <input type="file" name="promo_image" accept="image/jpeg,image/png,image/webp,image/gif"
                             class="tw-block tw-w-full tw-text-sm tw-text-white/70 file:tw-mr-4 file:tw-rounded-lg file:tw-border-0 file:tw-bg-violet-600 file:tw-px-4 file:tw-py-2 file:tw-text-sm file:tw-font-semibold file:tw-text-white hover:file:tw-bg-violet-500">
                     </div>
                     <div class="tw-space-y-3">
-                        <label class="tw-block tw-text-xs tw-font-semibold tw-tracking-wide tw-text-white/50 tw-uppercase">Video file</label>
+                        <label class="tw-block tw-text-xs tw-font-semibold tw-tracking-wide tw-text-white/50 tw-uppercase">{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_artist_promo_video' %}{% else %}Video file{% endif %}</label>
                         <input type="file" name="promo_video" accept="video/mp4,video/webm,video/quicktime,video/x-m4v,.mp4,.webm,.mov,.m4v"
                             class="tw-block tw-w-full tw-text-sm tw-text-white/70 file:tw-mr-4 file:tw-rounded-lg file:tw-border-0 file:tw-bg-fuchsia-600 file:tw-px-4 file:tw-py-2 file:tw-text-sm file:tw-font-semibold file:tw-text-white hover:file:tw-bg-fuchsia-500">
                     </div>
 
                     <div class="tw-flex tw-flex-col sm:tw-flex-row tw-gap-3 tw-pt-2">
                         <button type="submit" name="action" value="save" class="tw-inline-flex tw-flex-1 tw-items-center tw-justify-center tw-rounded-xl tw-bg-gradient-to-r tw-from-violet-600 tw-to-fuchsia-600 tw-px-5 tw-py-3 tw-text-sm tw-font-semibold tw-text-white tw-shadow-lg tw-transition hover:tw-brightness-110">
-                            Save promo
+                            {% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_artist_promo_save' %}{% else %}Save promo{% endif %}
                         </button>
                         <button type="submit" name="action" value="clear" formnovalidate class="tw-inline-flex tw-items-center tw-justify-center tw-rounded-xl tw-border tw-border-white/20 tw-bg-transparent tw-px-5 tw-py-3 tw-text-sm tw-font-semibold tw-text-white/80 tw-transition hover:tw-bg-white/10">
-                            Clear promo
+                            {% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_artist_promo_clear' %}{% else %}Clear promo{% endif %}
                         </button>
                     </div>
                 </form>
 
                 <p class="tw-text-xs tw-text-white/35 tw-font-sans tw-text-center">
-                    <a href="{% url 'core:home' %}" class="tw-text-violet-300 hover:tw-underline">← Back to home</a>
+                    <a href="{% url 'core:home' %}" class="tw-text-violet-300 hover:tw-underline">← {% ui 'back_home' %}</a>
                 </p>
             </div>
         </div>

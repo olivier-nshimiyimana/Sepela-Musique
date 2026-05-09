@@ -1,23 +1,80 @@
 import uuid
 import logging
 import base64
+from decimal import Decimal, InvalidOperation
+from urllib.parse import quote, urlencode
 
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
-from django.db.models import Count, Q
+from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.views.decorators.http import require_http_methods
 
 from accounts.models import User
 
-from .forms import HelpForm
+from .formatting import format_price_display
+from .forms import HelpForm, PaidVoteRequestForm
 from .leaderboard import top_artists_by_votes
-from .models import Contact, SiteSettings, Song, Token, Vote
+from .models import Contact, SiteConfiguration, SiteSettings, Song, Token, Vote, VotePackage, VoteRequest
 from .video_thumbnails import ensure_song_thumbnail_from_video
+from .vote_totals import combined_votes_for_song, song_vote_count_maps, total_vote_units_dashboard
 
 logger = logging.getLogger(__name__)
+
+VOTE_REQUEST_DASHBOARD_LIMIT = 200
+
+
+def _safe_dashboard_return_path(raw_path):
+    allowed = {'/', reverse('core:app_administration')}
+    path = (raw_path or '').strip() or reverse('core:app_administration')
+    return path if path in allowed else reverse('core:app_administration')
+
+
+def _parse_decimal(value):
+    raw = (value or '').strip().replace(',', '.')
+    if not raw:
+        return None
+    try:
+        return Decimal(raw)
+    except InvalidOperation:
+        return None
+
+
+def _non_negative_int(value, default=0):
+    try:
+        n = int(value)
+        return n if n >= 0 else default
+    except (TypeError, ValueError):
+        return default
+
+
+def _payment_instructions_plain(site):
+    lines = []
+    if site.payment_registered_name.strip():
+        lines.append('Pay to name: %s' % site.payment_registered_name.strip())
+    for label, num in site.mobile_money_lines():
+        lines.append('%s: %s' % (label, num))
+    note = site.payment_instructions_note.strip()
+    if note:
+        lines.append(note)
+    return '\n'.join(lines)
+
+
+def _vote_requests_for_dashboard(request):
+    raw = (request.GET.get('vr_status') or 'pending').strip().lower()
+    if raw not in ('pending', 'approved', 'rejected', 'all'):
+        raw = 'pending'
+    qs = VoteRequest.objects.select_related('song', 'song__user').order_by('-created_at')
+    if raw == 'pending':
+        qs = qs.filter(status=VoteRequest.Status.PENDING)
+    elif raw == 'approved':
+        qs = qs.filter(status=VoteRequest.Status.APPROVED)
+    elif raw == 'rejected':
+        qs = qs.filter(status=VoteRequest.Status.REJECTED)
+    return list(qs[:VOTE_REQUEST_DASHBOARD_LIMIT]), raw
 
 
 def _file_to_data_url(uploaded_file, fallback_mime):
@@ -32,15 +89,16 @@ def _file_to_data_url(uploaded_file, fallback_mime):
     return 'data:%s;base64,%s' % (mime_type, encoded)
 
 
-def _song_vote_count(song_id):
-    return Vote.objects.filter(songs=str(song_id)).count()
+def _song_vote_count(song_id, legacy_map=None, req_map=None):
+    return combined_votes_for_song(song_id, legacy_map, req_map)
 
 
 def _home_songs_with_votes(queryset, ascending_by_votes=True):
     """Materialize queryset, attach .votes, sort by vote count (default: ascending)."""
+    legacy_map, req_map = song_vote_count_maps()
     songs = list(queryset)
     for song in songs:
-        song.votes = _song_vote_count(song.id)
+        song.votes = combined_votes_for_song(song.id, legacy_map, req_map)
     songs.sort(key=lambda s: s.votes, reverse=not ascending_by_votes)
     return songs
 
@@ -73,37 +131,17 @@ def home(request):
             .select_related('user')
         )
 
+        legacy_map, req_map = song_vote_count_maps()
         for song in songs:
-            votes = Vote.objects.filter(songs=song.id)
-            if votes.exists():
-                song.votes = votes.first().count_votes
-            else:
-                song.votes = 0
+            song.votes = combined_votes_for_song(song.id, legacy_map, req_map)
         return render(request, "home.html", {'songs': songs, 'leaderboard': leaderboard})
     if request.user.user_type == 1:
-        uploads = User.objects.filter(user_type=2).count()
-        total_songs = Song.objects.count()
-        total_votes = Vote.objects.count()
-        total_contacts = Contact.objects.count()
-        recent_songs = Song.objects.select_related('user').order_by('-id')[:8]
-        recent_votes = Vote.objects.order_by('-id')[:10]
-        recent_contacts = Contact.objects.order_by('-id')[:8]
-        site_settings = SiteSettings.get_solo()
-        _enrich_admin_dashboard_lists(recent_songs, recent_votes)
-        return render(
-            request,
-            "admin_dashboard_modern.html",
-            {
-                'uploads': uploads,
-                'total_songs': total_songs,
-                'total_votes': total_votes,
-                'total_contacts': total_contacts,
-                'recent_songs': recent_songs,
-                'recent_votes': recent_votes,
-                'recent_contacts': recent_contacts,
-                'site_settings': site_settings,
-            },
-        )
+        ctx = _admin_dashboard_context(request)
+        ctx['recent_songs'] = Song.objects.select_related('user').order_by('-id')[:8]
+        ctx['recent_votes'] = Vote.objects.order_by('-id')[:10]
+        ctx['recent_contacts'] = Contact.objects.order_by('-id')[:8]
+        _enrich_admin_dashboard_lists(ctx['recent_songs'], ctx['recent_votes'])
+        return render(request, 'admin_dashboard_modern.html', ctx)
     else:
         if search:
             songs = Song.objects.filter(
@@ -145,9 +183,9 @@ def song_view(request):
             Q(description__icontains=search),
         )
     songs = list(songs[:400])
-    vote_counts = {row['songs']: row['cnt'] for row in Vote.objects.values('songs').annotate(cnt=Count('id'))}
+    legacy_map, req_map = song_vote_count_maps()
     for song in songs:
-        song.votes = vote_counts.get(str(song.id), 0)
+        song.votes = combined_votes_for_song(song.id, legacy_map, req_map)
 
     return render(
         request,
@@ -245,23 +283,25 @@ def catalog_reject_song(request, id):
 
 
 def _enrich_admin_dashboard_lists(recent_songs, recent_votes):
-    song_vote_counts = {row['songs']: row['cnt'] for row in Vote.objects.values('songs').annotate(cnt=Count('id'))}
+    legacy_map, req_map = song_vote_count_maps()
     for song in recent_songs:
-        song.votes = song_vote_counts.get(str(song.id), 0)
+        song.votes = combined_votes_for_song(song.id, legacy_map, req_map)
     song_title_map = {str(s.id): s.title for s in Song.objects.only('id', 'title')}
     for vote in recent_votes:
         vote.song_title = song_title_map.get(str(vote.songs), 'Unknown song')
 
 
-def _admin_dashboard_context():
+def _admin_dashboard_context(request):
     uploads = User.objects.filter(user_type=2).count()
     total_songs = Song.objects.count()
-    total_votes = Vote.objects.count()
+    total_votes = total_vote_units_dashboard()
     total_contacts = Contact.objects.count()
     recent_songs = Song.objects.select_related('user').order_by('-id')[:12]
     recent_votes = Vote.objects.order_by('-id')[:12]
     recent_contacts = Contact.objects.order_by('-id')[:8]
     site_settings = SiteSettings.get_solo()
+    site_configuration = SiteConfiguration.get_solo()
+    vote_requests, vote_request_status_filter = _vote_requests_for_dashboard(request)
 
     _enrich_admin_dashboard_lists(recent_songs, recent_votes)
 
@@ -274,6 +314,11 @@ def _admin_dashboard_context():
         'recent_votes': recent_votes,
         'recent_contacts': recent_contacts,
         'site_settings': site_settings,
+        'site_configuration': site_configuration,
+        'vote_requests': vote_requests,
+        'vote_request_status_filter': vote_request_status_filter,
+        'vote_requests_actionable': vote_request_status_filter in ('pending', 'all'),
+        'vote_packages': VotePackage.objects.order_by('sort_order', 'id'),
     }
 
 
@@ -286,6 +331,18 @@ def app_administration(request):
     if request.method == 'POST':
         action = request.POST.get('action')
 
+        if action == 'save_site_configuration':
+            cfg = SiteConfiguration.get_solo()
+            raw = (request.POST.get('site_mode') or '').strip()
+            valid = {m.value for m in SiteConfiguration.Mode}
+            if raw not in valid:
+                messages.error(request, 'Invalid site mode.')
+            else:
+                cfg.mode = raw
+                cfg.save(update_fields=['mode'])
+                messages.success(request, 'Site mode updated.')
+            return redirect(reverse('core:app_administration'))
+
         if action == 'save_site_settings':
             site = SiteSettings.get_solo()
             site.site_title = request.POST.get('site_title', site.site_title).strip() or site.site_title
@@ -293,8 +350,70 @@ def app_administration(request):
             site.contact_phone = request.POST.get('contact_phone', '').strip()
             site.contact_address = request.POST.get('contact_address', '').strip()
             site.vote_from_email = request.POST.get('vote_from_email', site.vote_from_email).strip() or site.vote_from_email
+            site.whatsapp_payments_phone = request.POST.get('whatsapp_payments_phone', '').strip()
+            site.payment_registered_name = request.POST.get('payment_registered_name', '').strip()
+            site.airtel_money_number = request.POST.get('airtel_money_number', '').strip()
+            site.afrimoney_number = request.POST.get('afrimoney_number', '').strip()
+            site.mpesa_number = request.POST.get('mpesa_number', '').strip()
+            site.payment_instructions_note = request.POST.get('payment_instructions_note', '').strip()
             site.save()
             messages.success(request, 'Site settings updated.')
+            return redirect(reverse('core:app_administration'))
+
+        if action == 'add_vote_package':
+            title = request.POST.get('vp_title', '').strip()
+            price = _parse_decimal(request.POST.get('vp_price'))
+            votes = _non_negative_int(request.POST.get('vp_vote_count'), 0)
+            currency = (request.POST.get('vp_currency') or 'CDF').strip()[:8] or 'CDF'
+            sort_order = _non_negative_int(request.POST.get('vp_sort_order'), 0)
+            is_active = request.POST.get('vp_is_active') == '1'
+            if not title or price is None or price <= 0 or votes < 1:
+                messages.error(request, 'Add a title, a positive price, and at least one vote.')
+            else:
+                VotePackage.objects.create(
+                    title=title,
+                    vote_count=votes,
+                    price=price,
+                    currency=currency,
+                    sort_order=sort_order,
+                    is_active=is_active,
+                )
+                messages.success(request, 'Vote package added.')
+            return redirect(reverse('core:app_administration'))
+
+        if action == 'update_vote_package':
+            pk = request.POST.get('package_id')
+            vp = VotePackage.objects.filter(pk=pk).first() if str(pk).isdigit() else None
+            if not vp:
+                messages.error(request, 'Package not found.')
+            else:
+                title = request.POST.get('vp_title', '').strip()
+                price = _parse_decimal(request.POST.get('vp_price'))
+                votes = _non_negative_int(request.POST.get('vp_vote_count'), 0)
+                currency = (request.POST.get('vp_currency') or vp.currency).strip()[:8] or 'CDF'
+                sort_order = _non_negative_int(request.POST.get('vp_sort_order'), vp.sort_order)
+                is_active = request.POST.get('vp_is_active') == '1'
+                if not title or price is None or price <= 0 or votes < 1:
+                    messages.error(request, 'Invalid package fields.')
+                else:
+                    vp.title = title
+                    vp.vote_count = votes
+                    vp.price = price
+                    vp.currency = currency
+                    vp.sort_order = sort_order
+                    vp.is_active = is_active
+                    vp.save()
+                    messages.success(request, 'Vote package updated.')
+            return redirect(reverse('core:app_administration'))
+
+        if action == 'delete_vote_package':
+            pk = request.POST.get('package_id')
+            vp = VotePackage.objects.filter(pk=pk).first() if str(pk).isdigit() else None
+            if vp:
+                vp.delete()
+                messages.success(request, 'Vote package removed.')
+            else:
+                messages.error(request, 'Package not found.')
             return redirect(reverse('core:app_administration'))
 
         if action in ('publish_song', 'reject_song'):
@@ -309,7 +428,29 @@ def app_administration(request):
             messages.success(request, 'Song updated.')
             return redirect(reverse('core:app_administration'))
 
-    return render(request, "admin_dashboard_modern.html", _admin_dashboard_context())
+        if action in ('approve_vote_requests', 'reject_vote_requests'):
+            return_path = _safe_dashboard_return_path(request.POST.get('return_path'))
+            vr_tab = (request.POST.get('return_vr_status') or 'pending').strip().lower()
+            if vr_tab not in ('pending', 'approved', 'rejected', 'all'):
+                vr_tab = 'pending'
+            id_list = []
+            for raw in request.POST.getlist('vote_request_id'):
+                if str(raw).isdigit():
+                    id_list.append(int(raw))
+            if not id_list:
+                messages.error(request, 'No vote package requests selected.')
+                return redirect('%s?%s' % (return_path, urlencode({'vr_status': vr_tab})))
+
+            base_qs = VoteRequest.objects.filter(pk__in=id_list, status=VoteRequest.Status.PENDING)
+            if action == 'approve_vote_requests':
+                n = base_qs.update(status=VoteRequest.Status.APPROVED)
+                messages.success(request, '%s package request(s) approved.' % n)
+            else:
+                n = base_qs.update(status=VoteRequest.Status.REJECTED)
+                messages.success(request, '%s package request(s) rejected.' % n)
+            return redirect('%s?%s' % (return_path, urlencode({'vr_status': vr_tab})))
+
+    return render(request, "admin_dashboard_modern.html", _admin_dashboard_context(request))
 
 
 @login_required
@@ -393,7 +534,13 @@ def admin_song_votes(request, id):
         return redirect(reverse('core:admin_song_votes', args=[song.id]))
 
     votes = Vote.objects.filter(songs=str(song.id)).order_by('-id')
-    return render(request, 'admin_song_votes.html', {'song': song, 'votes': votes})
+    legacy_map, req_map = song_vote_count_maps()
+    combined_vote_total = combined_votes_for_song(song.id, legacy_map, req_map)
+    return render(
+        request,
+        'admin_song_votes.html',
+        {'song': song, 'votes': votes, 'combined_vote_total': combined_vote_total},
+    )
 
 def about(request):
     if request.method == 'POST':
@@ -473,6 +620,10 @@ def artist_promo(request):
 
 @login_required
 def songUpload(request):
+    if request.user.user_type == 1:
+        messages.warning(request, 'Administrator accounts cannot upload tracks.')
+        return redirect(reverse('core:home'))
+
     if request.method == 'POST':
         song_title = request.POST['song_title']
         description = request.POST['description']
@@ -496,7 +647,6 @@ def songUpload(request):
         song.save()
         if song.song and not song.thumbnail:
             ensure_song_thumbnail_from_video(song)
-        print('song inserted')
         return redirect('/')
         
     else:
@@ -506,6 +656,9 @@ def songUpload(request):
         
 @login_required
 def update_song(request, id):
+  if request.user.user_type == 1:
+      messages.warning(request, 'Administrator accounts cannot edit artist uploads.')
+      return redirect(reverse('core:home'))
   song = get_object_or_404(Song, id=id, user=request.user)
   if _song_vote_count(song.id) > 0:
       messages.error(request, 'This song already has votes and can no longer be edited.')
@@ -515,6 +668,9 @@ def update_song(request, id):
 
 @login_required
 def updaterecord(request, id):
+    if request.user.user_type == 1:
+        messages.warning(request, 'Administrator accounts cannot edit artist uploads.')
+        return redirect(reverse('core:home'))
     song = get_object_or_404(Song, id=id, user=request.user)
     if _song_vote_count(song.id) > 0:
         messages.error(request, 'This song already has votes and can no longer be edited.')
@@ -543,7 +699,6 @@ def updaterecord(request, id):
     song.save()
     if song.song and not song.thumbnail:
         ensure_song_thumbnail_from_video(song)
-    print('song updated')
     messages.success(request, 'Song updated successfully.')
     return redirect('/')
 
@@ -552,12 +707,152 @@ def updaterecord(request, id):
 
 @login_required
 def delete_song(request, id):
+  if request.user.user_type == 1:
+      messages.warning(request, 'Administrator accounts cannot delete tracks from this flow.')
+      return redirect(reverse('core:home'))
   song = get_object_or_404(Song, id=id, user=request.user)
   song.delete()
   return redirect('/')
 
 def vote_view(request, id):
-    return render(request, 'voteEmail.html', {'id': id})
+    return redirect('%s?%s' % (reverse('core:paid_vote_request'), urlencode({'song': id})))
+
+
+@require_http_methods(['GET', 'POST'])
+def paid_vote_request_view(request):
+    """Save a pending paid vote package (with payment proof), email the buyer, then show WhatsApp."""
+    if request.user.is_authenticated and getattr(request.user, 'user_type', None) == 1:
+        messages.info(
+            request,
+            'Voting checkout is for listeners and artists. Use the administration dashboard for moderation.',
+        )
+        return redirect(reverse('core:app_administration'))
+
+    site = SiteSettings.get_solo()
+    active_packages = VotePackage.objects.filter(is_active=True).order_by('sort_order', 'id')
+    get_song = (request.GET.get('song') or '').strip()
+    locked_pk = None
+    if get_song.isdigit() and Song.objects.filter(pk=int(get_song), status='2').exists():
+        locked_pk = int(get_song)
+
+    locked_song = Song.objects.filter(pk=locked_pk, status='2').select_related('user').first() if locked_pk else None
+
+    initial = {}
+    if locked_pk:
+        initial['song'] = locked_pk
+
+    if request.method == 'POST':
+        form = PaidVoteRequestForm(request.POST, request.FILES, fixed_song_pk=locked_pk)
+        if form.is_valid():
+            vote_request = form.save(commit=False)
+            vote_request.status = VoteRequest.Status.PENDING
+            vote_request.save()
+
+            digits = ''.join(c for c in getattr(settings, 'WHATSAPP_PAYMENTS_PHONE', '').strip() if c.isdigit())
+            if not digits:
+                digits = site.whatsapp_payment_digits()
+
+            amt = vote_request.price_amount
+            amt_disp = format_price_display(amt) if amt is not None else ''
+            cur = (vote_request.currency_code or '').strip()
+            if amt is not None:
+                amount_bits = ('%s %s for ' % (amt_disp, cur)) if cur else ('%s for ' % amt_disp)
+            else:
+                amount_bits = ''
+            ch = ''
+            if vote_request.payment_method:
+                ch = ' Paid via %s (%s).' % (
+                    vote_request.payment_method_label(),
+                    vote_request.payment_method_number(),
+                )
+            whatsapp_text = (
+                'Hi, I am %(email)s. I paid %(amount_bits)s%(package)s (%(votes)s votes) '
+                'for "%(title)s". Ref: %(ref)s.%(ch)s I uploaded proof on the site — confirming here.'
+            ) % {
+                'email': vote_request.email,
+                'amount_bits': amount_bits,
+                'package': vote_request.package,
+                'votes': vote_request.vote_count,
+                'title': vote_request.song.title,
+                'ref': str(vote_request.transaction_id),
+                'ch': ch,
+            }
+            whatsapp_url = ''
+            if digits:
+                whatsapp_url = 'https://wa.me/%s?text=%s' % (digits, quote(whatsapp_text))
+
+            pay_plain = _payment_instructions_plain(site)
+
+            subject = '[%s] Vote package request received' % site.site_title
+            amount_line = ''
+            if amt is not None:
+                amount_line = (
+                    'Amount due: %s %s\n' % (amt_disp, cur) if cur else 'Amount due: %s\n' % amt_disp
+                )
+            pay_line = ''
+            if vote_request.payment_method:
+                pay_line = 'Paid with: %s (%s)\n' % (
+                    vote_request.payment_method_label(),
+                    vote_request.payment_method_number(),
+                )
+            body = (
+                'Hello,\n\n'
+                'We received your vote package request.\n\n'
+                'Song: %(song)s\n'
+                'Package: %(package)s\n'
+                'Votes: %(votes)s\n'
+                '%(amount_line)s'
+                '%(pay_line)s'
+                'Reference: %(ref)s\n\n'
+                '--- How to pay ---\n'
+                '%(pay)s\n\n'
+                '%(wa)s\n\n'
+                'Thank you,\n'
+                '%(brand)s\n'
+            ) % {
+                'song': vote_request.song.title,
+                'package': vote_request.package,
+                'votes': vote_request.vote_count,
+                'amount_line': amount_line,
+                'pay_line': pay_line,
+                'ref': str(vote_request.transaction_id),
+                'pay': pay_plain or '(Configure payment numbers under Administration → Site settings.)',
+                'wa': ('Optional WhatsApp follow-up: %s' % whatsapp_url)
+                if whatsapp_url
+                else ('Configure WhatsApp under Administration → Site settings.'),
+                'brand': site.site_title,
+            }
+            body += '\nPayment proof image was attached with this request on the website.\n'
+            from_email = site.vote_from_email or getattr(settings, 'DEFAULT_FROM_EMAIL', None)
+            try:
+                send_mail(subject, body, from_email, [vote_request.email], fail_silently=False)
+            except Exception:
+                logger.exception('Paid vote request acknowledgement email failed')
+
+            return render(
+                request,
+                'pending_vote_whatsapp.html',
+                {
+                    'vote_request': vote_request,
+                    'whatsapp_url': whatsapp_url,
+                    'site': site,
+                    'whatsapp_configured': bool(digits),
+                },
+            )
+    else:
+        form = PaidVoteRequestForm(initial=initial, fixed_song_pk=locked_pk)
+
+    return render(
+        request,
+        'vote_package_request.html',
+        {
+            'form': form,
+            'site': site,
+            'vote_packages': active_packages,
+            'has_vote_packages': active_packages.exists(),
+            'locked_song': locked_song,
+        },
+    )
 
 @login_required
 def accept_video(request, id):

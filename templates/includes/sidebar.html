@@ -27,7 +27,7 @@
             <li class="nav-item">
                 <a href="{% url 'core:artist_promo' %}" class="nav-link">
                     <i class="la la-image"></i>
-                    <span>{% ui 'promo_media' %}</span>
+                    <span>{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_nav_promo_media' %}{% else %}{% ui 'promo_media' %}{% endif %}</span>
                 </a>
             </li>
             {% endif %}
@@ -61,13 +61,13 @@
             <li class="nav-item">
                 <a href="{% url 'core:song_view' %}" class="nav-link">
                     <i class="la la-heart-o"></i>
-                    <span>{% ui 'publish_song' %}</span>
+                    <span>{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_nav_publish_queue' %}{% else %}{% ui 'publish_song' %}{% endif %}</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a href="{% url 'accounts:list_of_artist' %}" class="nav-link">
                     <i class="la la-microphone"></i>
-                    <span>{% ui 'artist_list' %}</span>
+                    <span>{% if SITE_MODE == 'MISS_KATANGA' %}{% ui 'mk_nav_candidate_list' %}{% else %}{% ui 'artist_list' %}{% endif %}</span>
                 </a>
             </li>
            {% endif %}

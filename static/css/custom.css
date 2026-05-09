@@ -2,6 +2,45 @@
     visibility: hidden;
 }
 
+/* WhatsApp CTA: high contrast, mobile-friendly tap target */
+a.btn-whatsapp-solid {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    max-width: 100%;
+    min-height: 48px;
+    padding: 0.875rem 1.25rem;
+    border-radius: 14px;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.25;
+    color: #ffffff !important;
+    text-decoration: none !important;
+    background: linear-gradient(180deg, #2bd36b 0%, #1fa855 55%, #128c4e 100%);
+    box-shadow: 0 4px 14px rgba(18, 140, 78, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+a.btn-whatsapp-solid:hover {
+    color: #ffffff !important;
+    filter: brightness(1.06);
+}
+
+a.btn-whatsapp-solid:active {
+    transform: scale(0.98);
+}
+
+@media (min-width: 640px) {
+    a.btn-whatsapp-solid {
+        width: auto;
+        min-width: 220px;
+    }
+}
+
 /* Global typography polish */
 html, body {
     -webkit-font-smoothing: antialiased;
@@ -133,18 +172,26 @@ body.theme-light #sidebar {
 }
 
 @media (max-width: 768px) {
-    /* Space under scroll content so fixed theme FAB does not sit on footer text */
+    /* Theme FAB: right edge, vertically centered in the viewport */
     #wrapper {
-        padding-bottom: calc(52px + env(safe-area-inset-bottom, 0px));
+        padding-bottom: env(safe-area-inset-bottom, 0px);
     }
 
     .btn-theme-toggle {
-        width: 36px;
-        height: 36px;
-        right: max(12px, env(safe-area-inset-right));
-        top: auto;
-        bottom: calc(22px + env(safe-area-inset-bottom));
-        transform: none;
+        width: 40px;
+        height: 40px;
+        right: max(10px, env(safe-area-inset-right));
+        left: auto;
+        top: 50%;
+        bottom: auto;
+        transform: translateY(-50%);
+    }
+
+    .theme-options-menu {
+        right: calc(54px + max(0px, env(safe-area-inset-right)));
+        bottom: auto;
+        top: 50%;
+        transform: translateY(-50%);
     }
 
     #sidebar {
@@ -155,14 +202,19 @@ body.theme-light #sidebar {
         z-index: 4990 !important;
     }
 
-    /* Final fallback: never let backdrop block sidebar taps on mobile */
-    .sidebar-backdrop,
-    .open-sidebar .sidebar-backdrop,
-    .backdrop.sidebar-backdrop,
-    .backdrop.sidebar-backdrop.show {
-        display: none !important;
-        opacity: 0 !important;
-        visibility: hidden !important;
+    /* Mobile: dim tap-outside layer when menu is open (closes on backdrop tap via custom.js) */
+    body.open-sidebar .sidebar-backdrop.show {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        position: fixed !important;
+        inset: 0 !important;
+        background: rgba(0, 0, 0, 0.52) !important;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    body:not(.open-sidebar) .sidebar-backdrop {
         pointer-events: none !important;
     }
 
@@ -464,4 +516,83 @@ body.theme-light .premium-content .yt-track-card .tw-text-white\/55 {
 
 body.theme-light .premium-content .yt-track-card .tw-text-white\/40 {
     color: #6b7280 !important;
+}
+
+/* Fixed #header overlaps first lines of premium pages — keep kicker (e.g. VOTE) visible */
+#pageWrapper.vote-page-premium,
+#pageWrapper.about-page-premium {
+    padding-top: calc(1rem + 3rem + 0.75rem);
+}
+
+/* Header search: no heavy Bootstrap “selected” ring; keyboard users keep a subtle focus-visible cue */
+#searchForm {
+    -webkit-tap-highlight-color: transparent;
+}
+
+#searchForm #search.form-control:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    background-color: transparent !important;
+}
+
+#searchForm #search.form-control:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.4);
+    outline-offset: 2px;
+    border-radius: 0.25rem;
+}
+
+/* Header live-search panel disabled (scripts.bundle still toggles open-search if handler ever returns) */
+#searchForm .search-card {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+/* Paid vote: styled selects (payment channel + vote package) — chevron, dark options */
+.pay-method-stack .pay-method-select,
+.pay-package-stack .pay-package-select {
+    box-sizing: border-box;
+    color-scheme: dark;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23c4b5fd' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.65rem center;
+    background-size: 1.1rem 1.1rem;
+}
+
+.pay-method-stack .pay-method-select option,
+.pay-package-stack .pay-package-select option {
+    background-color: #0f0a18;
+    color: #f5f3ff;
+}
+
+/* Form submit: loading state on primary buttons */
+button.sf-is-loading {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: wait;
+    opacity: 0.92;
+    pointer-events: none;
+}
+
+button.sf-is-loading .sf-btn-spinner {
+    display: inline-block;
+    width: 1.1em;
+    height: 1.1em;
+    margin-right: 0.45em;
+    vertical-align: -0.15em;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    border-top-color: rgba(255, 255, 255, 0.95);
+    border-radius: 50%;
+    animation: sfSpin 0.65s linear infinite;
+}
+
+.sf-btn-busy-text {
+    vertical-align: middle;
+}
+
+@keyframes sfSpin {
+    to {
+        transform: rotate(360deg);
+    }
 }
