@@ -38,7 +38,7 @@
 
             {% if has_vote_packages %}
             <div class="tw-rounded-3xl tw-border tw-border-white/[0.08] tw-bg-white/[0.04] tw-backdrop-blur-xl tw-p-5 sm:tw-p-8 tw-shadow-[0_25px_80px_-20px_rgba(124,58,237,0.35)]">
-                <form id="vote-pay-form" method="post" action="{{ request.get_full_path }}" enctype="multipart/form-data" class="tw-space-y-5 tw-font-sans sf-submit-state" data-sf-busy-label="{% filter escapejs %}{% ui 'form_processing' %}{% endfilter %}" data-msg-copied="{% filter escapejs %}{% ui 'pay_copied' %}{% endfilter %}">
+                <form id="vote-pay-form" method="post" action="{{ request.get_full_path }}" enctype="multipart/form-data" class="tw-space-y-5 tw-font-sans sf-no-submit-state" data-sf-busy-label="{% filter escapejs %}{% ui 'form_processing' %}{% endfilter %}" data-msg-copied="{% filter escapejs %}{% ui 'pay_copied' %}{% endfilter %}" data-msg-retry="{% filter escapejs %}{% ui 'pay_network_retrying' %}{% endfilter %}" data-msg-fail="{% filter escapejs %}{% ui 'pay_ajax_failed' %}{% endfilter %}" data-msg-upload="{% filter escapejs %}{% ui 'pay_upload_sending' %}{% endfilter %}" data-msg-indeterminate="{% filter escapejs %}{% ui 'pay_upload_indeterminate' %}{% endfilter %}">
                     {% csrf_token %}
 
                     <div>
@@ -124,8 +124,17 @@
                         {% if form.payment_proof.errors %}<p class="tw-mt-1 tw-text-xs tw-text-rose-300">{{ form.payment_proof.errors.0 }}</p>{% endif %}
                     </div>
 
-                    <div class="tw-flex tw-flex-col tw-gap-3 tw-pt-2">
-                        <button type="submit" class="tw-inline-flex tw-w-full tw-min-h-[48px] tw-items-center tw-justify-center tw-rounded-xl tw-bg-gradient-to-r tw-from-violet-600 tw-to-fuchsia-600 tw-px-5 tw-py-3.5 tw-text-base tw-font-semibold tw-text-white tw-shadow-lg tw-shadow-violet-600/25 tw-transition active:tw-scale-[0.98] focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-fuchsia-400/50">
+                    <div id="vote-pay-ajax-errors" class="tw-hidden tw-mb-4 tw-rounded-2xl tw-border tw-border-rose-400/30 tw-bg-rose-500/10 tw-px-4 tw-py-3 tw-text-center tw-font-sans tw-text-sm tw-text-rose-100" role="alert"></div>
+                    <div id="vote-pay-progress-wrap" class="tw-hidden tw-mb-4 tw-font-sans" aria-live="polite">
+                        <p id="vote-pay-progress-label" class="tw-text-xs tw-text-white/55 tw-mb-2"></p>
+                        <div class="tw-h-2 tw-w-full tw-rounded-full tw-bg-white/10 tw-overflow-hidden">
+                            <div id="vote-pay-progress-bar" class="tw-h-full tw-rounded-full tw-bg-gradient-to-r tw-from-violet-500 tw-to-fuchsia-500 tw-transition-[width] tw-duration-150" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <p class="tw-text-center tw-text-[11px] tw-text-white/40 tw-font-sans tw-leading-relaxed" role="note">{% ui 'pay_stay_on_page' %}</p>
+                    <p id="vote-pay-submit-hint" class="tw-text-center tw-text-[11px] tw-text-white/35 tw-font-sans tw-mb-1">{% ui 'pay_submit_hint_proof' %}</p>
+                    <div class="tw-flex tw-flex-col tw-gap-3 tw-pt-1">
+                        <button type="submit" id="vote-pay-submit" class="tw-inline-flex tw-w-full tw-min-h-[48px] tw-items-center tw-justify-center tw-rounded-xl tw-bg-gradient-to-r tw-from-violet-600 tw-to-fuchsia-600 tw-px-5 tw-py-3.5 tw-text-base tw-font-semibold tw-text-white tw-shadow-lg tw-shadow-violet-600/25 tw-transition active:tw-scale-[0.98] focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-fuchsia-400/50 disabled:tw-opacity-40 disabled:tw-cursor-not-allowed disabled:tw-shadow-none" aria-describedby="vote-pay-submit-hint">
                             {% ui 'pay_submit_whatsapp' %}
                         </button>
                         <a href="{% url 'core:home' %}" class="tw-inline-flex tw-min-h-[44px] tw-items-center tw-justify-center tw-rounded-xl tw-border tw-border-white/15 tw-bg-white/[0.04] tw-px-5 tw-py-3 tw-text-sm tw-font-semibold tw-text-white/85 tw-transition active:tw-scale-[0.98]">
@@ -194,6 +203,130 @@
                             var t = num.textContent.trim();
                             if (t) copyText(t, copyNum);
                         });
+                    }
+                    var proofIn = document.getElementById('id_payment_proof');
+                    var submitBtn = document.getElementById('vote-pay-submit');
+                    function syncSubmitForProof() {
+                        if (!proofIn || !submitBtn) return;
+                        var hasFile = proofIn.files && proofIn.files.length > 0;
+                        submitBtn.disabled = !hasFile;
+                        submitBtn.setAttribute('aria-disabled', hasFile ? 'false' : 'true');
+                    }
+                    if (proofIn && submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.setAttribute('aria-disabled', 'true');
+                        proofIn.addEventListener('change', syncSubmitForProof);
+                        syncSubmitForProof();
+                    }
+                    var ajaxBox = document.getElementById('vote-pay-ajax-errors');
+                    var progWrap = document.getElementById('vote-pay-progress-wrap');
+                    var progLabel = document.getElementById('vote-pay-progress-label');
+                    var progBar = document.getElementById('vote-pay-progress-bar');
+                    function hideAjaxError() {
+                        if (ajaxBox) {
+                            ajaxBox.classList.add('tw-hidden');
+                            ajaxBox.textContent = '';
+                        }
+                    }
+                    function showAjaxError(msg) {
+                        if (!ajaxBox) return;
+                        ajaxBox.textContent = msg || '';
+                        ajaxBox.classList.remove('tw-hidden');
+                    }
+                    function flattenErrors(errObj) {
+                        if (!errObj || typeof errObj !== 'object') return '';
+                        var lines = [];
+                        Object.keys(errObj).forEach(function (k) {
+                            (errObj[k] || []).forEach(function (m) {
+                                lines.push(m);
+                            });
+                        });
+                        return lines.join('\n');
+                    }
+                    if (form) {
+                        form.addEventListener('submit', function (e) {
+                            e.preventDefault();
+                            hideAjaxError();
+                            var btn = document.getElementById('vote-pay-submit');
+                            var busy = form.getAttribute('data-sf-busy-label') || '…';
+                            if (typeof window.sfFillButtonLoading === 'function' && btn) {
+                                window.sfFillButtonLoading(btn, busy);
+                            }
+                            if (progWrap) {
+                                progWrap.classList.remove('tw-hidden');
+                                if (progLabel) progLabel.textContent = form.getAttribute('data-msg-upload') || '';
+                                if (progBar) progBar.style.width = '0%';
+                            }
+                            function doneUi() {
+                                if (progWrap) progWrap.classList.add('tw-hidden');
+                                if (typeof window.sfClearButtonLoading === 'function' && btn) {
+                                    window.sfClearButtonLoading(btn);
+                                }
+                                syncSubmitForProof();
+                            }
+                            function sendOnce(retryIndex) {
+                                var xhr = new XMLHttpRequest();
+                                xhr.open('POST', form.action, true);
+                                xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                                var tok = form.querySelector('[name=csrfmiddlewaretoken]');
+                                if (tok && tok.value) xhr.setRequestHeader('X-CSRFToken', tok.value);
+                                xhr.timeout = 300000;
+                                xhr.upload.onprogress = function (ev) {
+                                    if (!progBar || !progLabel) return;
+                                    if (ev.lengthComputable && ev.total > 0) {
+                                        var pct = Math.min(99, Math.round(100 * ev.loaded / ev.total));
+                                        progBar.style.width = pct + '%';
+                                        progLabel.textContent = pct + '%';
+                                    } else {
+                                        progLabel.textContent = form.getAttribute('data-msg-indeterminate') || '…';
+                                    }
+                                };
+                                xhr.onload = function () {
+                                    var ct = xhr.getResponseHeader('Content-Type') || '';
+                                    if (xhr.status === 200 && ct.indexOf('application/json') >= 0) {
+                                        try {
+                                            var data = JSON.parse(xhr.responseText);
+                                            if (data.ok && data.redirect_url) {
+                                                if (progBar) progBar.style.width = '100%';
+                                                window.location.assign(data.redirect_url);
+                                                return;
+                                            }
+                                        } catch (err) {}
+                                        doneUi();
+                                        showAjaxError(form.getAttribute('data-msg-fail') || '');
+                                        return;
+                                    }
+                                    if (xhr.status === 400 && ct.indexOf('application/json') >= 0) {
+                                        doneUi();
+                                        try {
+                                            var d2 = JSON.parse(xhr.responseText);
+                                            showAjaxError(flattenErrors(d2.errors) || (form.getAttribute('data-msg-fail') || ''));
+                                        } catch (err2) {
+                                            showAjaxError(form.getAttribute('data-msg-fail') || '');
+                                        }
+                                        return;
+                                    }
+                                    if (retryIndex === 0 && (!xhr.status || xhr.status === 0 || (xhr.status >= 502 && xhr.status <= 504))) {
+                                        if (progLabel) progLabel.textContent = form.getAttribute('data-msg-retry') || '';
+                                        setTimeout(function () { sendOnce(1); }, 1600);
+                                        return;
+                                    }
+                                    doneUi();
+                                    showAjaxError(form.getAttribute('data-msg-fail') || '');
+                                };
+                                xhr.onerror = xhr.ontimeout = function () {
+                                    if (retryIndex === 0) {
+                                        if (progLabel) progLabel.textContent = form.getAttribute('data-msg-retry') || '';
+                                        setTimeout(function () { sendOnce(1); }, 1600);
+                                        return;
+                                    }
+                                    doneUi();
+                                    showAjaxError(form.getAttribute('data-msg-fail') || '');
+                                };
+                                xhr.send(new FormData(form));
+                            }
+                            sendOnce(0);
+                        }, true);
                     }
                 })();
             </script>

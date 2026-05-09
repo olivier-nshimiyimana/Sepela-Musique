@@ -25,6 +25,7 @@ urlpatterns = [
     path('song_view/publish_status/<int:id>', catalog_publish_song, name='catalog_publish_song'),
     path('song_view/reject_status/<int:id>', catalog_reject_song, name='catalog_reject_song'),
     path('vote_view/<int:id>', vote_view, name='vote_view'),
+    path('vote/paid/done/<uuid:transaction_id>', paid_vote_pending_view, name='paid_vote_pending'),
     path('vote/paid', paid_vote_request_view, name='paid_vote_request'),
     path('accept/<int:id>', accept_video, name='accept_video'),
     path('publish/<int:id>', publish_video, name='publish_video'),

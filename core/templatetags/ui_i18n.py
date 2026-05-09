@@ -132,6 +132,24 @@ UI_TEXT = {
         "fr": "Envoyer la preuve — continuer vers WhatsApp",
         "en": "Submit proof — continue to WhatsApp",
     },
+    "pay_stay_on_page": {
+        "fr": "Gardez cette page ouverte pendant l'envoi (photo + confirmation peuvent prendre quelques secondes).",
+        "en": "Keep this page open while sending — the screenshot upload and confirmation step can take a few seconds on mobile networks.",
+    },
+    "pay_submit_hint_proof": {
+        "fr": "Choisissez d'abord la capture d'ecran de paiement ci-dessus, puis le bouton s'active.",
+        "en": "Choose your payment screenshot above first — then the button becomes active.",
+    },
+    "pay_upload_sending": {"fr": "Envoi securise en cours…", "en": "Secure upload in progress…"},
+    "pay_upload_indeterminate": {"fr": "Envoi de votre preuve…", "en": "Uploading your proof…"},
+    "pay_network_retrying": {
+        "fr": "Connexion interrompue — nouvel essai automatique…",
+        "en": "Connection interrupted — retrying automatically…",
+    },
+    "pay_ajax_failed": {
+        "fr": "Impossible d'envoyer. Verifiez le reseau puis reessayez.",
+        "en": "Could not complete checkout. Check your connection and try again.",
+    },
     "pay_no_numbers": {
         "fr": "Aucun numero de paiement configure. Contactez l'equipe via Administration.",
         "en": "No payment numbers configured yet. Ask the team to add them under Administration.",

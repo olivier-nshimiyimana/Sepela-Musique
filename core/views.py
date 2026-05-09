@@ -1,5 +1,7 @@
-import uuid
+import functools
 import logging
+import threading
+import uuid
 import base64
 from decimal import Decimal, InvalidOperation
 from urllib.parse import quote, urlencode
@@ -8,7 +10,9 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
+from django.db import transaction
 from django.db.models import Q
+from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods
@@ -25,6 +29,69 @@ from .vote_totals import combined_votes_for_song, song_vote_count_maps, total_vo
 logger = logging.getLogger(__name__)
 
 VOTE_REQUEST_DASHBOARD_LIMIT = 200
+
+
+def _send_paid_vote_ack_mail(subject, body, from_email, recipient):
+    """Runs outside the request thread so slow SMTP/Brevo cannot hold the HTTP response."""
+    try:
+        send_mail(subject, body, from_email, [recipient], fail_silently=False)
+    except Exception:
+        logger.exception('Paid vote request acknowledgement email failed (async)')
+
+
+def _start_paid_vote_ack_mail_thread(subject, body, from_email, recipient):
+    threading.Thread(
+        target=_send_paid_vote_ack_mail,
+        args=(subject, body, from_email, recipient),
+        daemon=True,
+        name='paid-vote-ack-mail',
+    ).start()
+
+
+def _vote_checkout_wants_json(request):
+    return request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
+
+
+def _vote_request_form_errors_json(form):
+    return {field: [str(msg) for msg in msgs] for field, msgs in form.errors.items()}
+
+
+def _whatsapp_payment_digits(site):
+    digits = ''.join(c for c in getattr(settings, 'WHATSAPP_PAYMENTS_PHONE', '').strip() if c.isdigit())
+    if not digits:
+        digits = site.whatsapp_payment_digits()
+    return digits
+
+
+def _whatsapp_url_for_vote_request(vote_request, site, digits):
+    if not digits:
+        return ''
+    amt = vote_request.price_amount
+    amt_disp = format_price_display(amt) if amt is not None else ''
+    cur = (vote_request.currency_code or '').strip()
+    if amt is not None:
+        amount_bits = ('%s %s for ' % (amt_disp, cur)) if cur else ('%s for ' % amt_disp)
+    else:
+        amount_bits = ''
+    ch = ''
+    if vote_request.payment_method:
+        ch = ' Paid via %s (%s).' % (
+            vote_request.payment_method_label(),
+            vote_request.payment_method_number(),
+        )
+    whatsapp_text = (
+        'Hi, I am %(email)s. I paid %(amount_bits)s%(package)s (%(votes)s votes) '
+        'for "%(title)s". Ref: %(ref)s.%(ch)s I uploaded proof on the site — confirming here.'
+    ) % {
+        'email': vote_request.email,
+        'amount_bits': amount_bits,
+        'package': vote_request.package,
+        'votes': vote_request.vote_count,
+        'title': vote_request.song.title,
+        'ref': str(vote_request.transaction_id),
+        'ch': ch,
+    }
+    return 'https://wa.me/%s?text=%s' % (digits, quote(whatsapp_text))
 
 
 def _safe_dashboard_return_path(raw_path):
@@ -748,41 +815,14 @@ def paid_vote_request_view(request):
             vote_request.status = VoteRequest.Status.PENDING
             vote_request.save()
 
-            digits = ''.join(c for c in getattr(settings, 'WHATSAPP_PAYMENTS_PHONE', '').strip() if c.isdigit())
-            if not digits:
-                digits = site.whatsapp_payment_digits()
+            digits = _whatsapp_payment_digits(site)
+            whatsapp_url = _whatsapp_url_for_vote_request(vote_request, site, digits)
+
+            pay_plain = _payment_instructions_plain(site)
 
             amt = vote_request.price_amount
             amt_disp = format_price_display(amt) if amt is not None else ''
             cur = (vote_request.currency_code or '').strip()
-            if amt is not None:
-                amount_bits = ('%s %s for ' % (amt_disp, cur)) if cur else ('%s for ' % amt_disp)
-            else:
-                amount_bits = ''
-            ch = ''
-            if vote_request.payment_method:
-                ch = ' Paid via %s (%s).' % (
-                    vote_request.payment_method_label(),
-                    vote_request.payment_method_number(),
-                )
-            whatsapp_text = (
-                'Hi, I am %(email)s. I paid %(amount_bits)s%(package)s (%(votes)s votes) '
-                'for "%(title)s". Ref: %(ref)s.%(ch)s I uploaded proof on the site — confirming here.'
-            ) % {
-                'email': vote_request.email,
-                'amount_bits': amount_bits,
-                'package': vote_request.package,
-                'votes': vote_request.vote_count,
-                'title': vote_request.song.title,
-                'ref': str(vote_request.transaction_id),
-                'ch': ch,
-            }
-            whatsapp_url = ''
-            if digits:
-                whatsapp_url = 'https://wa.me/%s?text=%s' % (digits, quote(whatsapp_text))
-
-            pay_plain = _payment_instructions_plain(site)
-
             subject = '[%s] Vote package request received' % site.site_title
             amount_line = ''
             if amt is not None:
@@ -824,20 +864,40 @@ def paid_vote_request_view(request):
             }
             body += '\nPayment proof image was attached with this request on the website.\n'
             from_email = site.vote_from_email or getattr(settings, 'DEFAULT_FROM_EMAIL', None)
-            try:
-                send_mail(subject, body, from_email, [vote_request.email], fail_silently=False)
-            except Exception:
-                logger.exception('Paid vote request acknowledgement email failed')
+            # Do not block the multipart response on Brevo/SMTP (can take up to EMAIL_TIMEOUT
+            # seconds and causes Safari/mobile "network connection lost" if the proxy gives up).
+            transaction.on_commit(
+                functools.partial(
+                    _start_paid_vote_ack_mail_thread,
+                    subject,
+                    body,
+                    from_email,
+                    vote_request.email,
+                )
+            )
 
-            return render(
-                request,
-                'pending_vote_whatsapp.html',
-                {
-                    'vote_request': vote_request,
-                    'whatsapp_url': whatsapp_url,
-                    'site': site,
-                    'whatsapp_configured': bool(digits),
-                },
+            pending_ctx = {
+                'vote_request': vote_request,
+                'whatsapp_url': whatsapp_url,
+                'site': site,
+                'whatsapp_configured': bool(digits),
+            }
+            if _vote_checkout_wants_json(request):
+                pending_path = reverse(
+                    'core:paid_vote_pending',
+                    kwargs={'transaction_id': vote_request.transaction_id},
+                )
+                return JsonResponse(
+                    {
+                        'ok': True,
+                        'redirect_url': request.build_absolute_uri(pending_path),
+                    }
+                )
+            return render(request, 'pending_vote_whatsapp.html', pending_ctx)
+        if _vote_checkout_wants_json(request):
+            return JsonResponse(
+                {'ok': False, 'errors': _vote_request_form_errors_json(form)},
+                status=400,
             )
     else:
         form = PaidVoteRequestForm(initial=initial, fixed_song_pk=locked_pk)
@@ -853,6 +913,33 @@ def paid_vote_request_view(request):
             'locked_song': locked_song,
         },
     )
+
+
+@require_http_methods(['GET'])
+def paid_vote_pending_view(request, transaction_id):
+    """Lightweight confirmation page after checkout (GET avoids resubmit; UUID acts as secret link)."""
+    try:
+        tid = uuid.UUID(str(transaction_id))
+    except (ValueError, AttributeError, TypeError):
+        raise Http404
+    vote_request = get_object_or_404(
+        VoteRequest.objects.select_related('song', 'song__user'),
+        transaction_id=tid,
+    )
+    site = SiteSettings.get_solo()
+    digits = _whatsapp_payment_digits(site)
+    whatsapp_url = _whatsapp_url_for_vote_request(vote_request, site, digits)
+    return render(
+        request,
+        'pending_vote_whatsapp.html',
+        {
+            'vote_request': vote_request,
+            'whatsapp_url': whatsapp_url,
+            'site': site,
+            'whatsapp_configured': bool(digits),
+        },
+    )
+
 
 @login_required
 def accept_video(request, id):
